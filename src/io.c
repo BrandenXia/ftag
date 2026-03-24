@@ -40,8 +40,8 @@ void setup_resources(resources_t *r, bool verbose) {
 
   if (verbose)
     printf("Data path: %s\n", r->data_path);
-  char *db_path = get_db_path(r->data_path);
-  r->db = init_db(db_path, verbose);
+  r->db_path = get_db_path(r->data_path);
+  r->db = init_db(r->db_path, verbose);
 }
 
 void cleanup_resources(resources_t *r) {
