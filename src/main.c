@@ -8,7 +8,7 @@
 
 #include <sqlite3.h>
 
-#include "db.h"
+#include "io.h"
 #include "resource.h"
 #include "shell.h"
 #include "utils.h"
@@ -87,25 +87,22 @@ int cmd_init(int argc, char *argv[]) {
 
   if (global_opts.verbose)
     puts("Constructing database folder path...");
-  size_t path_len = strlen(path);
-  size_t folder_path_len = path_len + sizeof(DATA_DIRNAME) + 1; // +1 for '/'
-  char folder_path[folder_path_len];
-  snprintf(folder_path, sizeof(folder_path), "%s/%s", path, DATA_DIRNAME);
+  char *data_path = get_data_path(path);
   free(path);
   if (global_opts.verbose)
-    printf("Constructed database folder path: %s\n", folder_path);
+    printf("Constructed database folder path: %s\n", data_path);
 
   if (global_opts.verbose)
     puts("Checking the current state of the database directory...");
   struct stat st;
-  if (stat(folder_path, &st) == 0) {
+  if (stat(data_path, &st) == 0) {
     if (!opts.force) {
       fprintf(stderr, "Error creating database: %s already exists\n",
-              folder_path);
+              data_path);
       ERROR_EXIT("Please either remove the existing database directory or "
                  "run command with --force option to overwrite it.\n");
     }
-    if (rmrf(folder_path) != 0)
+    if (rmrf(data_path) != 0)
       PERROR_EXIT("Error removing existing database directory");
 
     puts("Existing database directory removed.");
@@ -114,14 +111,12 @@ int cmd_init(int argc, char *argv[]) {
 
   if (global_opts.verbose)
     puts("Creating database directory...");
-  if (mkdir(folder_path, 0755) != 0)
+  if (mkdir(data_path, 0755) != 0)
     PERROR_EXIT("Error creating database directory");
 
   if (global_opts.verbose)
     puts("Constructing database file path...");
-  size_t db_path_len = folder_path_len + sizeof(DB_FILENAME) + 1; // +1 for '/'
-  char db_path[db_path_len];
-  snprintf(db_path, sizeof(db_path), "%s/%s", folder_path, DB_FILENAME);
+  char *db_path = get_db_path(data_path);
   if (global_opts.verbose)
     printf("Constructed database file path: %s\n", db_path);
 
@@ -129,11 +124,13 @@ int cmd_init(int argc, char *argv[]) {
     puts("Initializing database...");
   sqlite3 *db = init_db(db_path, global_opts.verbose);
 
-  printf("Tag database initialized in '%s'\n", folder_path);
+  printf("Tag database initialized in '%s'\n", data_path);
 
   if (global_opts.verbose)
     puts("Closing database connection...");
   sqlite3_close(db);
+  free(db_path);
+  free(data_path);
 
   return 0;
 }
@@ -148,7 +145,7 @@ int cmd_add(int argc, char *argv[]) {
   if (!real_path)
     ERROR_EXIT("Error resolving file path '%s': %s\n", opts.file,
                strerror(errno));
-  char *relative_path = get_relative_path(r.data_parent, real_path);
+  char *relative_path = get_relative_path(r.data_root, real_path);
   if (global_opts.verbose)
     printf("Resolved real path: %s\nRelative path: %s\n", real_path,
            relative_path);

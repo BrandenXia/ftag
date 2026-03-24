@@ -28,7 +28,7 @@ bool check_data_dir(const char *path) {
   return true;
 }
 
-void find_data_dir(const char *path, char *data_dir) {
+void find_data_dir(const char *path, char *data_root, char *data_dir) {
   size_t path_len = strlen(path);
   char path_buf[path_len + 1];
   snprintf(path_buf, sizeof(path_buf), "%s", path);
@@ -45,7 +45,10 @@ void find_data_dir(const char *path, char *data_dir) {
     size_t buf_len = strlcpy(path_buf2, path_buf, sizeof(path_buf2));
     strlcat(path_buf2, "/" DATA_DIRNAME, sizeof(path_buf2));
     if (check_data_dir(path_buf2)) {
-      strlcpy(data_dir, path_buf2, path_len + sizeof(DATA_DIRNAME) + 1);
+      if (data_root != NULL)
+        strlcpy(data_root, path_buf, path_len + 1);
+      if (data_dir != NULL)
+        strlcpy(data_dir, path_buf2, path_len + sizeof(DATA_DIRNAME) + 1);
       return; // found the data dir
     }
 
@@ -72,25 +75,10 @@ void find_data_dir(const char *path, char *data_dir) {
              "initialized.\n");
 }
 
-char *get_data_path(void) {
-  char *cwd = realpath(".", NULL);
-  if (!cwd)
-    PERROR_EXIT("Error resolving current working directory");
-
-  size_t len = strlen(cwd) + sizeof(DATA_DIRNAME) + 1;
-  char *data_path = malloc(len);
-  if (!data_path)
-    PERROR_EXIT("Memory allocation failed for data_path");
-
-  find_data_dir(cwd, data_path);
-  free(cwd);
-
-  return data_path;
-}
-
-char *get_data_parent(const char *data_path) {
-  char *path = malloc(strlen(data_path) - sizeof("/" DATA_DIRNAME) + 2);
-  strncpy(path, data_path, strlen(data_path) - sizeof("/" DATA_DIRNAME) + 1);
+char *get_data_path(const char *data_root) {
+  size_t len = strlen(data_root) + sizeof(DATA_DIRNAME) + 1;
+  char *path = malloc(len);
+  snprintf(path, len, "%s/" DATA_DIRNAME, data_root);
   return path;
 }
 
@@ -106,20 +94,4 @@ char *get_db_path(const char *data_path) {
   snprintf(db_path, len, "%s/" DB_FILENAME, data_path);
 
   return db_path;
-}
-
-void setup_resources(resources_t *r, bool verbose) {
-  r->data_path = get_data_path();
-  r->data_parent = get_data_parent(r->data_path);
-  if (verbose)
-    printf("Data path: %s\n", r->data_path);
-  char *db_path = get_db_path(r->data_path);
-  r->db = init_db(db_path, verbose);
-}
-
-void cleanup_resources(resources_t *r) {
-  sqlite3_close(r->db);
-  free(r->db_path);
-  free(r->data_parent);
-  free(r->data_path);
 }

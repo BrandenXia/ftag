@@ -5,9 +5,6 @@
 
 #include <sqlite3.h>
 
-#include "hash.h"
-#include "utils.h"
-
 #define ERROR_SQL_EXIT(msg)                                                    \
   do {                                                                         \
     fprintf(stderr, msg ": %s\n", sqlite3_errmsg(db));                         \
@@ -89,6 +86,14 @@
   "FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE,\n"            \
   "FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE"
 
+sqlite3 *open_db(const char *path) {
+  sqlite3 *db;
+  int err = sqlite3_open(path, &db);
+  if (err != SQLITE_OK)
+    ERROR_SQL_EXIT("Error opening database");
+  return db;
+}
+
 #define SQL_CREATE_FILES_TABLE                                                 \
   "CREATE TABLE IF NOT EXISTS files (\n" SQL_FILES_SCHEMA ");"
 #define SQL_CREATE_TAGS_TABLE                                                  \
@@ -98,75 +103,30 @@
 #define SQL_CREATE_SCHEMA                                                      \
   SQL_CREATE_FILES_TABLE SQL_CREATE_TAGS_TABLE SQL_CREATE_FILE_TAGS_TABLE
 
-sqlite3 *init_db(const char *path, bool verbose) {
-  sqlite3 *db;
-  int err;
-
-  if (verbose)
-    printf("Opening database at path: %s\n", path);
-  err = sqlite3_open(path, &db);
-  if (err != SQLITE_OK)
-    ERROR_SQL_EXIT("Error opening database");
-  if (verbose)
-    puts("Database opened successfully.");
-
-  if (verbose)
-    puts("Creating database schema...");
+void setup_db(sqlite3 *db) {
   char *errmsg;
-  err = sqlite3_exec(db, SQL_CREATE_SCHEMA, NULL, NULL, &errmsg);
+  int err = sqlite3_exec(db, SQL_CREATE_SCHEMA, NULL, NULL, &errmsg);
   if (err != SQLITE_OK) {
     fprintf(stderr, "Error creating database schema: %s\n", errmsg);
     sqlite3_free(errmsg);
     sqlite3_close(db);
     exit(EXIT_FAILURE);
   }
-  if (verbose)
-    puts("Database schema prepared successfully.");
-
-  return db;
 }
 
 #define SQL_INSERT_FILE                                                        \
   "INSERT INTO files (path, is_dir, size, mtime, hash) VALUES (?, ?, ?, ?, "   \
   "?) ON CONFLICT(path) DO UPDATE SET path=excluded.path RETURNING id;"
 
-long long add_file(sqlite3 *db, const char *real_path,
-                   const char *relative_path, bool verbose) {
-  if (verbose)
-    printf("Adding file to database: real_path='%s', relative_path='%s'\n",
-           real_path, relative_path);
-
-  int err;
-
-  if (verbose)
-    puts("Retrieving file info...");
-  file_info_t info;
-  get_file_info(real_path, &info);
-  uint8_t hash[32];
-  if (info.is_dir)
-    err = hash_dir(real_path, hash);
-  else
-    err = hash_file(real_path, hash);
-  if (err != 0) {
-    sqlite3_close(db);
-    ERROR_EXIT("Error hashing file: %s\n", real_path);
-  }
-
-  if (verbose) {
-    printf("Inserting file into database with info: is_dir=%d, size=%lld, "
-           "mtime=%lld\n",
-           info.is_dir, info.size, info.mtime);
-    printf("File hash: ");
-    print_hash(hash);
-  }
-
+long long add_or_get_file_id(sqlite3 *db, const char *path, bool is_dir,
+                             uint64_t size, uint64_t mtime, uint8_t *hash) {
   sqlite3_stmt *stmt;
   SQL_PREPARE(stmt, SQL_INSERT_FILE);
-  SQL_BIND(text, stmt, 1, relative_path, "path");
-  SQL_BIND_NUM(int, stmt, 2, info.is_dir, "is_dir");
-  SQL_BIND_NUM(int64, stmt, 3, info.size, "size");
-  SQL_BIND_NUM(int64, stmt, 4, info.mtime, "mtime");
-  SQL_BIND_BLOB(stmt, 5, hash, sizeof(hash), "hash");
+  SQL_BIND(text, stmt, 1, path, "path");
+  SQL_BIND_NUM(int, stmt, 2, is_dir, "is_dir");
+  SQL_BIND_NUM(int64, stmt, 3, size, "size");
+  SQL_BIND_NUM(int64, stmt, 4, mtime, "mtime");
+  SQL_BIND_BLOB(stmt, 5, hash, 32, "hash");
 
   SQL_STEP(stmt, != SQLITE_ROW);
   long long file_id = sqlite3_column_int64(stmt, 0);
@@ -179,31 +139,26 @@ long long add_file(sqlite3 *db, const char *real_path,
   "INSERT INTO tags (name) VALUES (?) ON CONFLICT(name) DO UPDATE SET "        \
   "name=excluded.name RETURNING id;"
 
+long long add_or_get_tag_id(sqlite3 *db, const char *name) {
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, SQL_INSERT_TAG);
+  SQL_BIND(text, stmt, 1, name, "tag name");
+
+  SQL_STEP(stmt, != SQLITE_ROW);
+  long long tag_id = sqlite3_column_int64(stmt, 0);
+  SQL_FINALIZE(stmt);
+
+  return tag_id;
+}
+
 #define SQL_INSERT_FILE_TAG                                                    \
   "INSERT OR IGNORE INTO file_tags (file_id, tag_id) VALUES (?, ?);"
 
-void add_tags(sqlite3 *db, long long file_id, const char **tags,
-              size_t tags_count, bool verbose) {
+void add_file_tag(sqlite3 *db, long long file_id, long long tag_id) {
   sqlite3_stmt *stmt;
-
-  for (size_t i = 0; i < tags_count; i++) {
-    const char *tag = tags[i];
-
-    if (verbose)
-      printf("Preparing tag '%s' in database...\n", tag);
-    SQL_PREPARE(stmt, SQL_INSERT_TAG);
-    SQL_BIND(text, stmt, 1, tag, "tag name");
-    SQL_STEP(stmt, != SQLITE_ROW);
-    long long tag_id = sqlite3_column_int64(stmt, 0);
-    SQL_FINALIZE(stmt);
-
-    if (verbose)
-      printf("Adding tag '%s' (id: %lld) to file with id %lld\n", tag, tag_id,
-             file_id);
-    SQL_PREPARE(stmt, SQL_INSERT_FILE_TAG);
-    SQL_BIND_NUM(int64, stmt, 1, file_id, "file_id");
-    SQL_BIND_NUM(int64, stmt, 2, tag_id, "tag_id");
-    SQL_STEP(stmt);
-    SQL_FINALIZE(stmt);
-  }
+  SQL_PREPARE(stmt, SQL_INSERT_FILE_TAG);
+  SQL_BIND_NUM(int64, stmt, 1, file_id, "file_id");
+  SQL_BIND_NUM(int64, stmt, 2, tag_id, "tag_id");
+  SQL_STEP(stmt);
+  SQL_FINALIZE(stmt);
 }

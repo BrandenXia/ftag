@@ -3,18 +3,21 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include <sqlite3.h>
 
 #define DB_FILENAME "db.sqlite3"
 
-sqlite3 *init_db(const char *path, bool verbose);
+sqlite3 *open_db(const char *path);
 
-// adds a file to the database if it doesn't exist, and returns its id
-long long add_file(sqlite3 *db, const char *real_path,
-                   const char *relative_path, bool verbose);
+void setup_db(sqlite3 *db);
 
-void add_tags(sqlite3 *db, long long file_id, const char **tags,
-              size_t tags_count, bool verbose);
+long long add_or_get_file_id(sqlite3 *db, const char *path, bool is_dir,
+                             uint64_t size, uint64_t mtime, uint8_t *hash);
+
+long long add_or_get_tag_id(sqlite3 *db, const char *name);
+
+void add_file_tag(sqlite3 *db, long long file_id, long long tag_id);
 
 #endif
