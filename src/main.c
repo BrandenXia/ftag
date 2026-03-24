@@ -5,6 +5,9 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#include <sqlite3.h>
+
+#include "data.h"
 #include "db.h"
 #include "shell.h"
 #include "utils.h"
@@ -83,9 +86,10 @@ int cmd_init(int argc, char *argv[]) {
   if (global_opts.verbose)
     puts("Constructing database folder path...");
   size_t path_len = strlen(path);
-  size_t folder_path_len = path_len + sizeof(DB_DIRNAME) + 1; // +1 for '/'
+  size_t folder_path_len = path_len + sizeof(DATA_DIRNAME) + 1; // +1 for '/'
   char folder_path[folder_path_len];
-  snprintf(folder_path, sizeof(folder_path), "%s/%s", path, DB_DIRNAME);
+  snprintf(folder_path, sizeof(folder_path), "%s/%s", path, DATA_DIRNAME);
+  free(path);
   if (global_opts.verbose)
     printf("Constructed database folder path: %s\n", folder_path);
 
@@ -121,16 +125,42 @@ int cmd_init(int argc, char *argv[]) {
 
   if (global_opts.verbose)
     puts("Initializing database...");
-  init_db(db_path, global_opts.verbose);
+  sqlite3 *db = init_db(db_path, global_opts.verbose);
 
   printf("Tag database initialized in '%s'\n", folder_path);
 
+  if (global_opts.verbose)
+    puts("Closing database connection...");
+  sqlite3_close(db);
+
   return 0;
+}
+
+sqlite3 *find_db_and_open() {
+  char *cwd = realpath(".", NULL);
+
+  if (!cwd)
+    PERROR_EXIT("Error resolving current working directory");
+
+  size_t cwd_len = strlen(cwd);
+  size_t len = cwd_len + sizeof(DATA_DIRNAME) + 1 + sizeof(DB_FILENAME) + 1;
+  char path[len];
+  find_data_dir(cwd, path);
+  free(cwd);
+
+  if (global_opts.verbose)
+    printf("Found data path: %s\n", path);
+
+  strlcat(path, "/" DB_FILENAME, sizeof(path));
+  return init_db(path, global_opts.verbose);
 }
 
 int cmd_add(int argc, char *argv[]) {
   add_opts_t opts = {0};
   parse_add_opts(&opts, argc, argv);
+
+  sqlite3 *db = find_db_and_open();
+  sqlite3_close(db);
 
   return 0;
 }

@@ -35,7 +35,7 @@
 #define SQL_CREATE_SCHEMA                                                      \
   SQL_CREATE_FILES_TABLE SQL_CREATE_TAGS_TABLE SQL_CREATE_FILE_TAGS_TABLE
 
-void init_db(const char *path, bool verbose) {
+sqlite3 *init_db(const char *path, bool verbose) {
   sqlite3 *db;
   int err;
 
@@ -61,7 +61,7 @@ void init_db(const char *path, bool verbose) {
     exit(EXIT_FAILURE);
   }
   if (verbose)
-    puts("Database schema created successfully.");
+    puts("Database schema prepared successfully.");
 
-  sqlite3_close(db);
+  return db;
 }

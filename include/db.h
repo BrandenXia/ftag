@@ -3,9 +3,10 @@
 
 #include <stdbool.h>
 
-#define DB_DIRNAME ".ftag"
+#include <sqlite3.h>
+
 #define DB_FILENAME "db.sqlite3"
 
-void init_db(const char *path, bool verbose);
+sqlite3 *init_db(const char *path, bool verbose);
 
 #endif
