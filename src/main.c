@@ -8,6 +8,7 @@
 
 #include <sqlite3.h>
 
+#include "db.h"
 #include "io.h"
 #include "resource.h"
 #include "shell.h"
@@ -183,12 +184,19 @@ int cmd_rm(int argc, char *argv[]) {
 
   long long file_id =
       add_or_get_file(r.db, real_path, relative_path, global_opts.verbose);
-  remove_tags(r.db, file_id, opts.tags, opts.tags_count, global_opts.verbose);
-
-  if (opts.tags_count > 1)
-    printf("Removed %zu tags from file '%s'\n", opts.tags_count, opts.file);
+  if (opts.all)
+    remove_all_tags(r.db, file_id);
   else
-    printf("Removed tag '%s' from file '%s'\n", opts.tags[0], opts.file);
+    remove_tags(r.db, file_id, opts.tags, opts.tags_count, global_opts.verbose);
+
+  if (opts.all)
+    printf("Removed all tags from file '%s'\n", opts.file);
+  else {
+    if (opts.tags_count > 1)
+      printf("Removed %zu tags from file '%s'\n", opts.tags_count, opts.file);
+    else
+      printf("Removed tag '%s' from file '%s'\n", opts.tags[0], opts.file);
+  }
 
   free(relative_path);
   free(real_path);

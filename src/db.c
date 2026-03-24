@@ -180,11 +180,22 @@ void add_file_tag(sqlite3 *db, long long file_id, long long tag_id) {
 
 #define SQL_DELETE_FILE_TAG                                                    \
   "DELETE FROM file_tags WHERE file_id = ? AND tag_id = ?;"
+
 void remove_file_tag(sqlite3 *db, long long file_id, long long tag_id) {
   sqlite3_stmt *stmt;
   SQL_PREPARE(stmt, SQL_DELETE_FILE_TAG);
   SQL_BIND_NUM(int64, stmt, 1, file_id, "file_id");
   SQL_BIND_NUM(int64, stmt, 2, tag_id, "tag_id");
+  SQL_STEP(stmt);
+  SQL_FINALIZE(stmt);
+}
+
+#define SQL_DELETE_ALL_FILE_TAGS "DELETE FROM file_tags WHERE file_id = ?;"
+
+void remove_all_tags(sqlite3 *db, long long file_id) {
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, SQL_DELETE_ALL_FILE_TAGS);
+  SQL_BIND_NUM(int64, stmt, 1, file_id, "file_id");
   SQL_STEP(stmt);
   SQL_FINALIZE(stmt);
 }

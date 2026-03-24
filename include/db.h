@@ -26,4 +26,6 @@ void add_file_tag(sqlite3 *db, long long file_id, long long tag_id);
 
 void remove_file_tag(sqlite3 *db, long long file_id, long long tag_id);
 
+void remove_all_tags(sqlite3 *db, long long file_id);
+
 #endif
