@@ -51,8 +51,8 @@ void cleanup_resources(resources_t *r) {
   free(r->data_path);
 }
 
-long long add_file(sqlite3 *db, const char *real_path,
-                   const char *relative_path, bool verbose) {
+long long add_or_get_file(sqlite3 *db, const char *real_path,
+                          const char *relative_path, bool verbose) {
   if (verbose)
     printf("Adding file to database: real_path='%s', relative_path='%s'\n",
            real_path, relative_path);
@@ -87,6 +87,7 @@ long long add_file(sqlite3 *db, const char *real_path,
 
 void add_tags(sqlite3 *db, long long file_id, const char **tags,
               size_t tags_count, bool verbose) {
+  begin_transaction(db);
   for (size_t i = 0; i < tags_count; i++) {
     const char *tag = tags[i];
 
@@ -99,4 +100,23 @@ void add_tags(sqlite3 *db, long long file_id, const char **tags,
              file_id);
     add_file_tag(db, file_id, tag_id);
   }
+  commit_transaction(db);
+}
+
+void remove_tags(sqlite3 *db, long long file_id, const char **tags,
+                 size_t tags_count, bool verbose) {
+  begin_transaction(db);
+  for (size_t i = 0; i < tags_count; i++) {
+    const char *tag = tags[i];
+
+    if (verbose)
+      printf("Preparing tag '%s' in database...\n", tag);
+    long long tag_id = add_or_get_tag_id(db, tag);
+
+    if (verbose)
+      printf("Removing tag '%s' (id: %lld) from file with id %lld\n", tag,
+             tag_id, file_id);
+    remove_file_tag(db, file_id, tag_id);
+  }
+  commit_transaction(db);
 }

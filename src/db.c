@@ -16,6 +16,18 @@
   if (err != SQLITE_OK)                                                        \
     ERROR_SQL_EXIT("Error binding " param);
 
+#define SQL_EXEC(sql)                                                          \
+  do {                                                                         \
+    char *errmsg;                                                              \
+    int err = sqlite3_exec(db, (sql), NULL, NULL, &errmsg);                    \
+    if (err != SQLITE_OK) {                                                    \
+      fprintf(stderr, "Error executing SQL statement: %s\n", errmsg);          \
+      sqlite3_free(errmsg);                                                    \
+      sqlite3_close(db);                                                       \
+      exit(EXIT_FAILURE);                                                      \
+    }                                                                          \
+  } while (0)
+
 #define SQL_PREPARE(stmt, sql)                                                 \
   do {                                                                         \
     int err = sqlite3_prepare_v2(db, (sql), -1, &(stmt), NULL);                \
@@ -64,6 +76,9 @@
     if (err != SQLITE_OK)                                                      \
       ERROR_SQL_EXIT("Error finalizing SQL statement");                        \
   } while (0)
+
+void begin_transaction(sqlite3 *db) { SQL_EXEC("BEGIN TRANSACTION;"); }
+void commit_transaction(sqlite3 *db) { SQL_EXEC("COMMIT;"); }
 
 #define SQL_FILES_SCHEMA                                                       \
   "id INTEGER PRIMARY KEY,\n"                                                  \
@@ -157,6 +172,17 @@ long long add_or_get_tag_id(sqlite3 *db, const char *name) {
 void add_file_tag(sqlite3 *db, long long file_id, long long tag_id) {
   sqlite3_stmt *stmt;
   SQL_PREPARE(stmt, SQL_INSERT_FILE_TAG);
+  SQL_BIND_NUM(int64, stmt, 1, file_id, "file_id");
+  SQL_BIND_NUM(int64, stmt, 2, tag_id, "tag_id");
+  SQL_STEP(stmt);
+  SQL_FINALIZE(stmt);
+}
+
+#define SQL_DELETE_FILE_TAG                                                    \
+  "DELETE FROM file_tags WHERE file_id = ? AND tag_id = ?;"
+void remove_file_tag(sqlite3 *db, long long file_id, long long tag_id) {
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, SQL_DELETE_FILE_TAG);
   SQL_BIND_NUM(int64, stmt, 1, file_id, "file_id");
   SQL_BIND_NUM(int64, stmt, 2, tag_id, "tag_id");
   SQL_STEP(stmt);

@@ -85,6 +85,9 @@ typedef struct {
 typedef struct {
   bool all;
   bool force;
+  const char *file;
+  size_t tags_count;
+  const char **tags;
 } rm_opts_t;
 
 typedef struct {

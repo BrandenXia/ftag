@@ -151,7 +151,7 @@ int cmd_add(int argc, char *argv[]) {
            relative_path);
 
   long long file_id =
-      add_file(r.db, real_path, relative_path, global_opts.verbose);
+      add_or_get_file(r.db, real_path, relative_path, global_opts.verbose);
   add_tags(r.db, file_id, opts.tags, opts.tags_count, global_opts.verbose);
 
   if (opts.tags_count > 1)
@@ -169,6 +169,30 @@ int cmd_add(int argc, char *argv[]) {
 int cmd_rm(int argc, char *argv[]) {
   rm_opts_t opts = {0};
   parse_rm_opts(&opts, argc, argv);
+  resources_t r;
+  setup_resources(&r, global_opts.verbose);
+
+  char *real_path = realpath(opts.file, NULL);
+  if (!real_path)
+    ERROR_EXIT("Error resolving file path '%s': %s\n", opts.file,
+               strerror(errno));
+  char *relative_path = get_relative_path(r.data_root, real_path);
+  if (global_opts.verbose)
+    printf("Resolved real path: %s\nRelative path: %s\n", real_path,
+           relative_path);
+
+  long long file_id =
+      add_or_get_file(r.db, real_path, relative_path, global_opts.verbose);
+  remove_tags(r.db, file_id, opts.tags, opts.tags_count, global_opts.verbose);
+
+  if (opts.tags_count > 1)
+    printf("Removed %zu tags from file '%s'\n", opts.tags_count, opts.file);
+  else
+    printf("Removed tag '%s' from file '%s'\n", opts.tags[0], opts.file);
+
+  free(relative_path);
+  free(real_path);
+  cleanup_resources(&r);
 
   return 0;
 }

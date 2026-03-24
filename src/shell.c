@@ -102,6 +102,17 @@ void parse_rm_opts(rm_opts_t *opts, int argc, char **argv) {
     case '?':
       ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
     }
+
+  if (opts->all) {
+    if (argc < optind + 1)
+      ERROR_USAGE_EXIT("Error processing args: Expect at least a file\n");
+  } else if (argc < optind + 2)
+    ERROR_USAGE_EXIT(
+        "Error processing args: Expect at least a file and a tag\n");
+
+  opts->file = argv[optind];
+  opts->tags_count = argc - optind - 1;
+  opts->tags = (const char **)(argv + optind + 1);
 }
 
 // --------------------------FIND --------------------------
