@@ -20,6 +20,6 @@ void add_tags(sqlite3 *db, long long file_id, const char **tags,
               size_t tags_count, bool verbose);
 
 void remove_tags(sqlite3 *db, long long file_id, const char **tags,
-                 size_t tags_count, bool verbose);
+                 size_t tags_count, bool force, bool verbose);
 
 #endif

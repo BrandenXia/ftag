@@ -187,7 +187,8 @@ int cmd_rm(int argc, char *argv[]) {
   if (opts.all)
     remove_all_tags(r.db, file_id);
   else
-    remove_tags(r.db, file_id, opts.tags, opts.tags_count, global_opts.verbose);
+    remove_tags(r.db, file_id, opts.tags, opts.tags_count, opts.force,
+                global_opts.verbose);
 
   if (opts.all)
     printf("Removed all tags from file '%s'\n", opts.file);

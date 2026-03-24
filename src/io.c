@@ -104,7 +104,7 @@ void add_tags(sqlite3 *db, long long file_id, const char **tags,
 }
 
 void remove_tags(sqlite3 *db, long long file_id, const char **tags,
-                 size_t tags_count, bool verbose) {
+                 size_t tags_count, bool force, bool verbose) {
   begin_transaction(db);
   for (size_t i = 0; i < tags_count; i++) {
     const char *tag = tags[i];
@@ -117,6 +117,12 @@ void remove_tags(sqlite3 *db, long long file_id, const char **tags,
       printf("Removing tag '%s' (id: %lld) from file with id %lld\n", tag,
              tag_id, file_id);
     remove_file_tag(db, file_id, tag_id);
+
+    int changes = sqlite3_changes(db);
+    if (changes == 0 && !force)
+      printf("Warning: Tag '%s' was not associated with file id %lld, nothing "
+             "removed\n",
+             tag, file_id);
   }
   commit_transaction(db);
 }
