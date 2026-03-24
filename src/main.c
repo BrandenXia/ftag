@@ -61,7 +61,7 @@ int cmd_init(int argc, char *argv[]) {
            opts.dir, opts.force ? "true" : "false");
 
   if (opts.force) {
-    puts("WARNING: Force option is enabled. Existing tag database will be "
+    puts("Warning: Force option is enabled. Existing tag database will be "
          "overwritten if it exists.");
     printf("Continue? [y/N] ");
     char response = getchar();
