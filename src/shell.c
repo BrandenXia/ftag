@@ -6,16 +6,6 @@
 
 #include "utils.h"
 
-// static inline char *shift_args(int *argc, char ***argv) {
-//   char *first_arg = NULL;
-//   if (*argc > 0) {
-//     first_arg = (*argv)[0];
-//     (*argv)++;
-//     (*argc)--;
-//   }
-//   return first_arg;
-// }
-
 #define UNKOWN_OPT_MSG "Error processing arguments: Unknown option '-%c'\n"
 
 // -------------------------GLOBAL -------------------------
@@ -69,21 +59,26 @@ void parse_init_opts(init_opts_t *opts, int argc, char **argv) {
 // clang-format off
 static struct option add_long_opts[] = {
   {"help", no_argument, NULL, 'h'},
-  {"force", no_argument, NULL, 'f'},
   {NULL, 0, NULL, 0}
 };
 // clang-format on
 void parse_add_opts(add_opts_t *opts, int argc, char **argv) {
   int opt;
-  while ((opt = getopt_long(argc, argv, "hf", add_long_opts, NULL)) != -1)
+  while ((opt = getopt_long(argc, argv, "h", add_long_opts, NULL)) != -1)
     // clang-format off
     switch (opt) {
     case 'h': fputs(USAGE_STR_ADD, stdout); exit(EXIT_SUCCESS);
-    case 'f': opts->force = true; break;
     // clang-format on
     case '?':
       ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
     }
+
+  if (argc < optind + 2)
+    ERROR_USAGE_EXIT(
+        "Error processing args: Expect at least a file and a tag\n");
+  opts->file = argv[optind];
+  opts->tags_count = argc - optind - 1;
+  opts->tags = (const char **)(argv + optind + 1);
 }
 
 // -------------------------REMOVE -------------------------

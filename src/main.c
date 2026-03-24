@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <getopt.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,8 +8,8 @@
 
 #include <sqlite3.h>
 
-#include "data.h"
 #include "db.h"
+#include "resource.h"
 #include "shell.h"
 #include "utils.h"
 
@@ -78,7 +79,8 @@ int cmd_init(int argc, char *argv[]) {
     puts("Resolving directory path...");
   char *path = realpath(opts.dir, NULL);
   if (!path)
-    PERROR_EXIT("Error resolving directory path");
+    ERROR_EXIT("Error resolving directory path '%s': %s", opts.dir,
+               strerror(errno));
 
   if (global_opts.verbose)
     printf("Resolved directory path: %s\n", path);
@@ -136,31 +138,33 @@ int cmd_init(int argc, char *argv[]) {
   return 0;
 }
 
-sqlite3 *find_db_and_open() {
-  char *cwd = realpath(".", NULL);
-
-  if (!cwd)
-    PERROR_EXIT("Error resolving current working directory");
-
-  size_t cwd_len = strlen(cwd);
-  size_t len = cwd_len + sizeof(DATA_DIRNAME) + 1 + sizeof(DB_FILENAME) + 1;
-  char path[len];
-  find_data_dir(cwd, path);
-  free(cwd);
-
-  if (global_opts.verbose)
-    printf("Found data path: %s\n", path);
-
-  strlcat(path, "/" DB_FILENAME, sizeof(path));
-  return init_db(path, global_opts.verbose);
-}
-
 int cmd_add(int argc, char *argv[]) {
   add_opts_t opts = {0};
   parse_add_opts(&opts, argc, argv);
+  resources_t r;
+  setup_resources(&r, global_opts.verbose);
 
-  sqlite3 *db = find_db_and_open();
-  sqlite3_close(db);
+  char *real_path = realpath(opts.file, NULL);
+  if (!real_path)
+    ERROR_EXIT("Error resolving file path '%s': %s\n", opts.file,
+               strerror(errno));
+  char *relative_path = get_relative_path(r.data_parent, real_path);
+  if (global_opts.verbose)
+    printf("Resolved real path: %s\nRelative path: %s\n", real_path,
+           relative_path);
+
+  long long file_id =
+      add_file(r.db, real_path, relative_path, global_opts.verbose);
+  add_tags(r.db, file_id, opts.tags, opts.tags_count, global_opts.verbose);
+
+  if (opts.tags_count > 1)
+    printf("Added file '%s' with %zu tags\n", opts.file, opts.tags_count);
+  else
+    printf("Added file '%s' with tag '%s'\n", opts.file, opts.tags[0]);
+
+  free(relative_path);
+  free(real_path);
+  cleanup_resources(&r);
 
   return 0;
 }

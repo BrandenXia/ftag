@@ -1,7 +1,10 @@
 #include "utils.h"
 
 #include <ftw.h>
+#include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 // from https://stackoverflow.com/a/5467788
@@ -15,4 +18,74 @@ static int unlink_cb(const char *fpath, const struct stat *, int,
 }
 int rmrf(const char *path) {
   return nftw(path, unlink_cb, 64, FTW_DEPTH | FTW_PHYS);
+}
+
+char *get_relative_path(const char *from, const char *to) {
+  if (!from || !to || from[0] != '/' || to[0] != '/')
+    return NULL;
+
+  const char *f = from + 1;
+  const char *t = to + 1;
+
+  while (*f && *t) {
+    const char *next_f = strchr(f, '/');
+    const char *next_t = strchr(t, '/');
+
+    if (!next_f)
+      next_f = f + strlen(f);
+    if (!next_t)
+      next_t = t + strlen(t);
+
+    size_t len_f = next_f - f;
+    size_t len_t = next_t - t;
+
+    if (len_f == len_t && strncmp(f, t, len_f) == 0) {
+      f = next_f;
+      t = next_t;
+      if (*f == '/')
+        f++;
+      if (*t == '/')
+        t++;
+    } else
+      break;
+  }
+
+  int up_count = 0;
+  if (*f != '\0') {
+    up_count = 1;
+    for (const char *p = f; *p; p++)
+      if (*p == '/')
+        up_count++;
+  }
+
+  if (up_count == 0 && *t == '\0')
+    return strdup(".");
+
+  size_t result_len = (up_count * 3) + strlen(t) + 1;
+  char *result = malloc(result_len);
+  if (!result)
+    return NULL;
+
+  char *ptr = result;
+  for (int i = 0; i < up_count; i++) {
+    memcpy(ptr, "../", 3);
+    ptr += 3;
+  }
+
+  if (*t == '\0' && up_count > 0)
+    *(ptr - 1) = '\0';
+  else
+    strcpy(ptr, t);
+
+  return result;
+}
+
+void get_file_info(const char *path, file_info_t *info) {
+  struct stat st;
+  if (stat(path, &st) == -1)
+    PERROR_EXIT("Error getting file info");
+
+  info->is_dir = S_ISDIR(st.st_mode);
+  info->size = st.st_size;
+  info->mtime = st.st_mtime;
 }

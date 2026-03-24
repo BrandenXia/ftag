@@ -3,6 +3,7 @@
 
 #include <getopt.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 static const char *USAGE_STR_GLOBAL =
     "Usage: ftag [options] <command> [args...]\n"
@@ -76,7 +77,9 @@ typedef struct {
 } init_opts_t;
 
 typedef struct {
-  bool force;
+  const char *file;
+  size_t tags_count;
+  const char **tags;
 } add_opts_t;
 
 typedef struct {

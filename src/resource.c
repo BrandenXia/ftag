@@ -1,11 +1,13 @@
-#include "data.h"
+#include "resource.h"
 
 #include <dirent.h>
 #include <errno.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 
+#include "db.h"
 #include "utils.h"
 
 bool check_data_dir(const char *path) {
@@ -68,4 +70,56 @@ void find_data_dir(const char *path, char *data_dir) {
              "finding the data directory\nPlease make sure you are inside a "
              "valid project directory and the data directory is correctly "
              "initialized.\n");
+}
+
+char *get_data_path(void) {
+  char *cwd = realpath(".", NULL);
+  if (!cwd)
+    PERROR_EXIT("Error resolving current working directory");
+
+  size_t len = strlen(cwd) + sizeof(DATA_DIRNAME) + 1;
+  char *data_path = malloc(len);
+  if (!data_path)
+    PERROR_EXIT("Memory allocation failed for data_path");
+
+  find_data_dir(cwd, data_path);
+  free(cwd);
+
+  return data_path;
+}
+
+char *get_data_parent(const char *data_path) {
+  char *path = malloc(strlen(data_path) - sizeof("/" DATA_DIRNAME) + 2);
+  strncpy(path, data_path, strlen(data_path) - sizeof("/" DATA_DIRNAME) + 1);
+  return path;
+}
+
+char *get_db_path(const char *data_path) {
+  if (!data_path)
+    ERROR_EXIT("Data path is NULL");
+
+  size_t len = strlen(data_path) + sizeof(DB_FILENAME) + 1;
+  char *db_path = malloc(len);
+  if (!db_path)
+    PERROR_EXIT("Memory allocation failed for db_path");
+
+  snprintf(db_path, len, "%s/" DB_FILENAME, data_path);
+
+  return db_path;
+}
+
+void setup_resources(resources_t *r, bool verbose) {
+  r->data_path = get_data_path();
+  r->data_parent = get_data_parent(r->data_path);
+  if (verbose)
+    printf("Data path: %s\n", r->data_path);
+  char *db_path = get_db_path(r->data_path);
+  r->db = init_db(db_path, verbose);
+}
+
+void cleanup_resources(resources_t *r) {
+  sqlite3_close(r->db);
+  free(r->db_path);
+  free(r->data_parent);
+  free(r->data_path);
 }

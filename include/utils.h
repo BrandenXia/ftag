@@ -1,6 +1,7 @@
 #ifndef FTAG_UTILS_H
 #define FTAG_UTILS_H
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -26,5 +27,20 @@
   } while (0)
 
 int rmrf(const char *path);
+
+/**
+ * Computes the relative path from one absolute realpath to another. Note: Both
+ * inputs MUST be absolute paths (e.g., as returned by realpath(3)). The
+ * returned string is dynamically allocated and must be free()'d by the caller.
+ */
+char *get_relative_path(const char *from, const char *to);
+
+typedef struct {
+  bool is_dir;
+  uint64_t size;
+  uint64_t mtime;
+} file_info_t;
+
+void get_file_info(const char *path, file_info_t *info);
 
 #endif

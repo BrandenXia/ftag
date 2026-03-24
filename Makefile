@@ -13,10 +13,10 @@ else
 	$(error Invalid MODE: $(MODE). Use DEBUG or RELEASE.)
 endif
 
-INCLUDE_DIRS := include
+INCLUDE_DIRS := include external/BLAKE3/c
 INCLUDE_FLAGS := $(patsubst %,-I%, $(INCLUDE_DIRS))
-LIBS_FILES :=
-LIB_FLAGS := -lsqlite3
+LIBS_FILES := external/BLAKE3/c/build/libblake3.a
+LIB_FLAGS := -lsqlite3 -Lexternal/BLAKE3/c/build -lblake3
 BUILD_DIR ?= build
 BUILD_DIR_SLASH := $(BUILD_DIR)/
 TARGET := $(BUILD_DIR)/ftag
@@ -32,6 +32,10 @@ $(BUILD_DIR_SLASH):
 	mkdir -p $@
 
 -include $(DEPS)
+
+external/BLAKE3/c/build/libblake3.a:
+	cmake -S external/BLAKE3/c -B external/BLAKE3/c/build
+	cmake --build external/BLAKE3/c/build
 
 $(BUILD_DIR)/%.o: src/%.c Makefile | $(BUILD_DIR_SLASH)
 	$(CC) $(CFLAGS) -MMD -MP $(INCLUDE_FLAGS) -c $< -o $@
