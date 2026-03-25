@@ -134,7 +134,10 @@ struct print_file_ctx {
   bool verbose;
 };
 
-void print_file_path(const char *path, bool is_dir, void *user_data) {
+void print_file_path(sqlite3_stmt *stmt, void *user_data) {
+  const char *path = (const char *)sqlite3_column_text(stmt, 0);
+  bool is_dir = sqlite3_column_int(stmt, 1);
+
   struct print_file_ctx *ctx = user_data;
   const char *relative_to = ctx->relative_to;
 
@@ -172,17 +175,20 @@ void query_files(sqlite3 *db, const char **tags, size_t tags_count,
 
   int found_count =
       query_files_by_tags(db, tags, tags_count, match_mode,
-                          (query_files_ctx_t){print_file_path, &ctx});
+                          (db_query_ctx_t){print_file_path, &ctx});
 
   if (found_count == 0)
     printf("No files found matching the specified tags.\n");
 }
 
-void print_tag(const char *tag, void *) { puts(tag); }
+void print_tag(sqlite3_stmt *stmt, void *) {
+  const char *tag = (const char *)sqlite3_column_text(stmt, 0);
+  puts(tag);
+}
 
 void show_tags(sqlite3 *db, long long file_id) {
   int found_count =
-      query_tags_by_file(db, file_id, (find_tags_ctx_t){print_tag, NULL});
+      query_tags_by_file(db, file_id, (db_query_ctx_t){print_tag, NULL});
 
   if (found_count == 0)
     printf("No tags found for the specified file.\n");

@@ -13,6 +13,12 @@ sqlite3_stmt *prepare_stmt(sqlite3 *db, const char *sql);
 void begin_transaction(sqlite3 *db);
 void commit_transaction(sqlite3 *db);
 
+typedef void (*db_query_cb_t)(sqlite3_stmt *stmt, void *user_data);
+typedef struct {
+  db_query_cb_t callback;
+  void *user_data;
+} db_query_ctx_t;
+
 sqlite3 *open_db(const char *path);
 
 void setup_db(sqlite3 *db);
@@ -34,22 +40,11 @@ enum tag_match_mode {
   TAG_MATCH_RELEVANCE,
 };
 
-typedef void (*file_path_cb_t)(const char *path, bool is_dir, void *user_data);
-typedef struct {
-  file_path_cb_t callback;
-  void *user_data;
-} query_files_ctx_t;
-
 // Returns the number of files found
 int query_files_by_tags(sqlite3 *db, const char **tags, size_t tags_count,
-                        enum tag_match_mode mode, query_files_ctx_t ctx);
+                        enum tag_match_mode mode, db_query_ctx_t ctx);
 
-typedef void (*tag_cb_t)(const char *tag, void *user_data);
-typedef struct {
-  tag_cb_t callback;
-  void *user_data;
-} find_tags_ctx_t;
-
-int query_tags_by_file(sqlite3 *db, long long file_id, find_tags_ctx_t ctx);
+// Returns the number of files found
+int query_tags_by_file(sqlite3 *db, long long file_id, db_query_ctx_t ctx);
 
 #endif
