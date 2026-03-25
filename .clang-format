@@ -1,4 +1,3 @@
----
 Language: Cpp
 AlignAfterOpenBracket: true
 AccessModifierOffset: -2
@@ -116,7 +115,7 @@ BraceWrapping:
 BreakAdjacentStringLiterals: true
 BreakAfterAttributes: Leave
 BreakAfterJavaFieldAnnotations: false
-BreakAfterOpenBracketBracedList: false
+BreakAfterOpenBracketBracedList: true
 BreakAfterOpenBracketFunction: false
 BreakAfterOpenBracketIf: false
 BreakAfterOpenBracketLoop: false
@@ -317,5 +316,3 @@ WhitespaceSensitiveMacros:
   - PP_STRINGIZE
   - STRINGIZE
 WrapNamespaceBodyWithEmptyLines: Leave
-...
-

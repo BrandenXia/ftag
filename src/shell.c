@@ -10,44 +10,32 @@
 #define UNKOWN_OPT_MSG "Error processing arguments: Unknown option '-%c'\n"
 
 // -------------------------GLOBAL -------------------------
-// clang-format off
 static struct option global_long_opts[] = {
-  {"verbose", no_argument, NULL, 'v'},
-  {"help", no_argument, NULL, 'h'},
-  {NULL, 0, NULL, 0}
-};
-// clang-format on
+    {"verbose", no_argument, NULL, 'v'},
+    {"help", no_argument, NULL, 'h'},
+    {NULL, 0, NULL, 0}};
 void parse_global_opts(global_opts_t *opts, int argc, char **argv) {
   int opt;
   while ((opt = getopt_long(argc, argv, "+vh", global_long_opts, NULL)) != -1)
-    // clang-format off
     switch (opt) {
     case 'v': opts->verbose = true; break;
     case 'h': fputs(USAGE_STR_GLOBAL, stdout); exit(EXIT_SUCCESS);
-    // clang-format on
-    case '?':
-      ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
+    case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
     }
 }
 
 // --------------------------INIT --------------------------
-// clang-format off
 static struct option init_long_opts[] = {
-  {"help", no_argument, NULL, 'h'},
-  {"force", no_argument, NULL, 'f'},
-  {NULL, 0, NULL, 0}
-};
-// clang-format on
+    {"help", no_argument, NULL, 'h'},
+    {"force", no_argument, NULL, 'f'},
+    {NULL, 0, NULL, 0}};
 void parse_init_opts(init_opts_t *opts, int argc, char **argv) {
   int opt;
   while ((opt = getopt_long(argc, argv, "hf", init_long_opts, NULL)) != -1)
-    // clang-format off
     switch (opt) {
     case 'h': fputs(USAGE_STR_INIT, stdout); exit(EXIT_SUCCESS);
     case 'f': opts->force = true; break;
-    // clang-format on
-    case '?':
-      ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
+    case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
     }
 
   if (optind < argc)
@@ -57,23 +45,17 @@ void parse_init_opts(init_opts_t *opts, int argc, char **argv) {
 }
 
 // --------------------------ADD --------------------------
-// clang-format off
 static struct option add_long_opts[] = {
-  {"strict", no_argument, NULL, 's'},
-  {"help", no_argument, NULL, 'h'},
-  {NULL, 0, NULL, 0}
-};
-// clang-format on
+    {"strict", no_argument, NULL, 's'},
+    {"help", no_argument, NULL, 'h'},
+    {NULL, 0, NULL, 0}};
 void parse_add_opts(add_opts_t *opts, int argc, char **argv) {
   int opt;
   while ((opt = getopt_long(argc, argv, "sh", add_long_opts, NULL)) != -1)
-    // clang-format off
     switch (opt) {
     case 's': opts->strict = true; break;
     case 'h': fputs(USAGE_STR_ADD, stdout); exit(EXIT_SUCCESS);
-    // clang-format on
-    case '?':
-      ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
+    case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
     }
 
   if (argc < optind + 2)
@@ -85,27 +67,21 @@ void parse_add_opts(add_opts_t *opts, int argc, char **argv) {
 }
 
 // -------------------------REMOVE -------------------------
-// clang-format off
 static struct option rm_long_opts[] = {
-  {"all", no_argument, NULL, 'a'},
-  {"force", no_argument, NULL, 'f'},
-  {"strict", no_argument, NULL, 's'},
-  {"help", no_argument, NULL, 'h'},
-  {NULL, 0, NULL, 0}
-};
-// clang-format on
+    {"all", no_argument, NULL, 'a'},
+    {"force", no_argument, NULL, 'f'},
+    {"strict", no_argument, NULL, 's'},
+    {"help", no_argument, NULL, 'h'},
+    {NULL, 0, NULL, 0}};
 void parse_rm_opts(rm_opts_t *opts, int argc, char **argv) {
   int opt;
   while ((opt = getopt_long(argc, argv, "afsh", rm_long_opts, NULL)) != -1)
-    // clang-format off
     switch (opt) {
     case 'a': opts->all = true; break;
     case 'f': opts->force = true; break;
     case 's': opts->strict = true; break;
     case 'h': fputs(USAGE_STR_RM, stdout); exit(EXIT_SUCCESS);
-    // clang-format on
-    case '?':
-      ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
+    case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
     }
 
   if (opts->all) {
@@ -121,15 +97,12 @@ void parse_rm_opts(rm_opts_t *opts, int argc, char **argv) {
 }
 
 // -------------------------QUERY -------------------------
-// clang-format off
 static struct option query_long_opts[] = {
-  {"dir", required_argument, NULL, 'd'},
-  {"type", required_argument, NULL, 't'},
-  {"match", required_argument, NULL, 'm'},
-  {"help", no_argument, NULL, 'h'},
-  {NULL, 0, NULL, 0}
-};
-// clang-format on
+    {"dir", required_argument, NULL, 'd'},
+    {"type", required_argument, NULL, 't'},
+    {"match", required_argument, NULL, 'm'},
+    {"help", no_argument, NULL, 'h'},
+    {NULL, 0, NULL, 0}};
 void parse_query_opts(query_opts_t *opts, int argc, char **argv) {
   int opt;
   opts->match_mode = TAG_MATCH_RELEVANCE; // Default match mode
@@ -137,10 +110,8 @@ void parse_query_opts(query_opts_t *opts, int argc, char **argv) {
 
   while ((opt = getopt_long(argc, argv, "d:t:m:h", query_long_opts, NULL)) !=
          -1)
-    // clang-format off
     switch (opt) {
     case 'd': opts->dir = optarg; break;
-    // clang-format on
     case 't':
       if (strcmp(optarg, "file") == 0)
         opts->type = QUERY_TYPE_FILE;
@@ -162,11 +133,8 @@ void parse_query_opts(query_opts_t *opts, int argc, char **argv) {
         ERROR_USAGE_EXIT("Error processing args: Invalid match mode '%s'\n",
                          optarg);
       break;
-    case 'h':
-      fputs(USAGE_STR_QUERY, stdout);
-      exit(EXIT_SUCCESS);
-    case '?':
-      ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
+    case 'h': fputs(USAGE_STR_QUERY, stdout); exit(EXIT_SUCCESS);
+    case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
     }
 
   if (argc < optind + 1)
@@ -177,23 +145,17 @@ void parse_query_opts(query_opts_t *opts, int argc, char **argv) {
 }
 
 // --------------------------SHOW --------------------------
-// clang-format off
 static struct option show_long_opts[] = {
-  {"strict", no_argument, NULL, 's'},
-  {"help", no_argument, NULL, 'h'},
-  {NULL, 0, NULL, 0}
-};
-// clang-format on
+    {"strict", no_argument, NULL, 's'},
+    {"help", no_argument, NULL, 'h'},
+    {NULL, 0, NULL, 0}};
 void parse_show_opts(show_opts_t *opts, int argc, char **argv) {
   int opt;
   while ((opt = getopt_long(argc, argv, "sh", show_long_opts, NULL)) != -1)
-    // clang-format off
     switch (opt) {
     case 's': opts->strict = true; break;
     case 'h': fputs(USAGE_STR_SHOW, stdout); exit(EXIT_SUCCESS);
-    // clang-format on
-    case '?':
-      ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
+    case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
     }
 
   if (argc < optind + 1)
@@ -212,11 +174,8 @@ static struct option sync_long_opts[] = {
 void parse_sync_opts(sync_opts_t *, int argc, char **argv) {
   int opt;
   while ((opt = getopt_long(argc, argv, "h", sync_long_opts, NULL)) != -1)
-    // clang-format off
     switch (opt) {
     case 'h': fputs(USAGE_STR_SYNC, stdout); exit(EXIT_SUCCESS);
-    // clang-format on
-    case '?':
-      ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
+    case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
     }
 }

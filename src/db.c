@@ -13,8 +13,7 @@
   } while (0)
 
 #define CHECK_BIND_ERR(param)                                                  \
-  if (err != SQLITE_OK)                                                        \
-    ERROR_SQL_EXIT("Error binding " param);
+  if (err != SQLITE_OK) ERROR_SQL_EXIT("Error binding " param);
 
 #define SQL_EXEC(sql)                                                          \
   do {                                                                         \
@@ -31,8 +30,7 @@
 #define SQL_PREPARE(stmt, sql)                                                 \
   do {                                                                         \
     int err = sqlite3_prepare_v2(db, (sql), -1, &(stmt), NULL);                \
-    if (err != SQLITE_OK)                                                      \
-      ERROR_SQL_EXIT("Error preparing SQL statement");                         \
+    if (err != SQLITE_OK) ERROR_SQL_EXIT("Error preparing SQL statement");     \
   } while (0)
 
 #define SQL_BIND(type, stmt, idx, value, name)                                 \
@@ -61,8 +59,7 @@
 #define _SQL_STEP(stmt, cond)                                                  \
   do {                                                                         \
     int err = sqlite3_step(stmt);                                              \
-    if (err cond)                                                              \
-      ERROR_SQL_EXIT("Error executing SQL statement");                         \
+    if (err cond) ERROR_SQL_EXIT("Error executing SQL statement");             \
   } while (0)
 #define _SQL_STEP_DEFAULT(stmt) _SQL_STEP(stmt, != SQLITE_DONE)
 
@@ -73,8 +70,7 @@
 #define SQL_FINALIZE(stmt)                                                     \
   do {                                                                         \
     int err = sqlite3_finalize(stmt);                                          \
-    if (err != SQLITE_OK)                                                      \
-      ERROR_SQL_EXIT("Error finalizing SQL statement");                        \
+    if (err != SQLITE_OK) ERROR_SQL_EXIT("Error finalizing SQL statement");    \
   } while (0)
 
 void begin_transaction(sqlite3 *db) { SQL_EXEC("BEGIN TRANSACTION;"); }
@@ -104,8 +100,7 @@ void commit_transaction(sqlite3 *db) { SQL_EXEC("COMMIT;"); }
 sqlite3 *open_db(const char *path) {
   sqlite3 *db;
   int err = sqlite3_open(path, &db);
-  if (err != SQLITE_OK)
-    ERROR_SQL_EXIT("Error opening database");
+  if (err != SQLITE_OK) ERROR_SQL_EXIT("Error opening database");
   return db;
 }
 
@@ -238,15 +233,9 @@ int query_files_by_tags(sqlite3 *db, const char **tags, size_t tags_count,
                         enum tag_match_mode mode, db_query_ctx_t ctx) {
   const char *template;
   switch (mode) {
-  case TAG_MATCH_RELEVANCE:
-    template = SQL_QUERY_FILES_BY_TAGS_RELEVANCE;
-    break;
-  case TAG_MATCH_OR:
-    template = SQL_QUERY_FILES_BY_TAGS_OR;
-    break;
-  case TAG_MATCH_AND:
-    template = SQL_QUERY_FILES_BY_TAGS_AND;
-    break;
+  case TAG_MATCH_RELEVANCE: template = SQL_QUERY_FILES_BY_TAGS_RELEVANCE; break;
+  case TAG_MATCH_OR: template = SQL_QUERY_FILES_BY_TAGS_OR; break;
+  case TAG_MATCH_AND: template = SQL_QUERY_FILES_BY_TAGS_AND; break;
   }
 
   size_t placeholders_len = tags_count * 2;      // "?, ?, ..."
