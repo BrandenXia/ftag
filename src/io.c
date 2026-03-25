@@ -127,7 +127,7 @@ void remove_tags(sqlite3 *db, long long file_id, const char **tags,
   commit_transaction(db);
 }
 
-struct query_files_ctx {
+struct print_file_ctx {
   const char *relative_to;
   const char *dir;
   enum query_type type;
@@ -135,7 +135,7 @@ struct query_files_ctx {
 };
 
 void print_file_path(const char *path, bool is_dir, void *user_data) {
-  struct query_files_ctx *ctx = user_data;
+  struct print_file_ctx *ctx = user_data;
   const char *relative_to = ctx->relative_to;
 
   if (ctx->dir && strcmp(ctx->dir, ".") != 0) {
@@ -163,7 +163,7 @@ void print_file_path(const char *path, bool is_dir, void *user_data) {
 void query_files(sqlite3 *db, const char **tags, size_t tags_count,
                  enum tag_match_mode match_mode, const char *relative_to,
                  const char *dir, enum query_type type, bool verbose) {
-  struct query_files_ctx ctx = {
+  struct print_file_ctx ctx = {
       .relative_to = relative_to,
       .dir = dir,
       .type = type,
@@ -172,7 +172,7 @@ void query_files(sqlite3 *db, const char **tags, size_t tags_count,
 
   int found_count =
       query_files_by_tags(db, tags, tags_count, match_mode,
-                          (query_context_t){print_file_path, &ctx});
+                          (query_files_ctx_t){print_file_path, &ctx});
 
   if (found_count == 0)
     printf("No files found matching the specified tags.\n");
@@ -181,5 +181,5 @@ void query_files(sqlite3 *db, const char **tags, size_t tags_count,
 void print_tag(const char *tag, void *) { puts(tag); }
 
 void show_tags(sqlite3 *db, long long file_id) {
-  find_tags_by_file(db, file_id, (show_tags_context_t){print_tag, NULL});
+  query_tags_by_file(db, file_id, (find_tags_ctx_t){print_tag, NULL});
 }
