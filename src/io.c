@@ -66,18 +66,71 @@ resolve_file_path(const char *file, const char *data_root, bool verbose) {
   return (struct resolve_file_path_result){real_path, relative_path};
 }
 
+struct check_file_info_ctx {
+  bool strict;
+  bool *match;
+  long long *file_id;
+  file_info_t *info;
+};
+
+void check_file_info(sqlite3_stmt *stmt, void *user_data) {
+  struct check_file_info_ctx *ctx = user_data;
+  file_info_t *info = ctx->info;
+
+  const char *path = (const char *)sqlite3_column_text(stmt, 1);
+  bool is_dir = sqlite3_column_int(stmt, 2);
+  int64_t size = sqlite3_column_int64(stmt, 3);
+  int64_t mtime = sqlite3_column_int64(stmt, 4);
+
+  if (is_dir != info->is_dir || size != info->size || mtime != info->mtime) {
+    if (ctx->strict) {
+      fprintf(stderr,
+              "Error: file '%s' already exists in the database with different "
+              "info (is_dir=%d, size=%lld, mtime=%lld)\n",
+              path, is_dir, size, mtime);
+      exit(EXIT_FAILURE);
+    }
+
+    printf("Warning: file '%s' already exists in the database with different "
+           "info (is_dir=%d, size=%lld, mtime=%lld), updating info\n",
+           path, is_dir, size, mtime);
+    printf("You can use '--strict' option to prevent this and treat it as an "
+           "error instead\n");
+    *ctx->match = false;
+    return;
+  }
+
+  *ctx->match = true;
+  *ctx->file_id = sqlite3_column_int64(stmt, 0);
+}
+
 long long add_or_get_file(sqlite3 *db, const char *real_path,
-                          const char *relative_path, bool verbose) {
+                          const char *relative_path, bool strict,
+                          bool verbose) {
   if (verbose)
-    printf("Adding file to database: real_path='%s', relative_path='%s'\n",
-           real_path, relative_path);
+    printf("Checking if file '%s' is already in the database...\n",
+           relative_path);
 
   int err;
-
   if (verbose)
     puts("Retrieving file info...");
   file_info_t info;
   get_file_info(real_path, &info);
+
+  bool match;
+  long long file_id;
+  struct check_file_info_ctx ctx = {
+      .strict = strict,
+      .match = &match,
+      .file_id = &file_id,
+      .info = &info,
+  };
+  query_file_by_path(
+      db, relative_path,
+      (db_query_ctx_t){.callback = check_file_info, .user_data = &ctx});
+  if (match)
+    return file_id;
+
   uint8_t hash[32];
   if (info.is_dir)
     err = hash_dir(real_path, hash);
@@ -96,7 +149,7 @@ long long add_or_get_file(sqlite3 *db, const char *real_path,
     print_hash(hash);
   }
 
-  return add_or_get_file_id(db, relative_path, info.is_dir, info.size,
+  return add_or_update_file(db, relative_path, info.is_dir, info.size,
                             info.mtime, hash);
 }
 

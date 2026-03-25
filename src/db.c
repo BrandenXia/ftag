@@ -135,14 +135,15 @@ void setup_db(sqlite3 *db) {
   }
 }
 
-#define SQL_INSERT_FILE                                                        \
+#define SQL_INSERT_UPDATE_FILE                                                 \
   "INSERT INTO files (path, is_dir, size, mtime, hash) VALUES (?, ?, ?, ?, "   \
-  "?) ON CONFLICT(path) DO UPDATE SET path=excluded.path RETURNING id;"
+  "?) ON CONFLICT(path) DO UPDATE SET is_dir=excluded.is_dir, "                \
+  "size=excluded.size, mtime=excluded.mtime, hash=excluded.hash RETURNING id;"
 
-long long add_or_get_file_id(sqlite3 *db, const char *path, bool is_dir,
+long long add_or_update_file(sqlite3 *db, const char *path, bool is_dir,
                              int64_t size, int64_t mtime, uint8_t *hash) {
   sqlite3_stmt *stmt;
-  SQL_PREPARE(stmt, SQL_INSERT_FILE);
+  SQL_PREPARE(stmt, SQL_INSERT_UPDATE_FILE);
   SQL_BIND(text, stmt, 1, path, "path");
   SQL_BIND_NUM(int, stmt, 2, is_dir, "is_dir");
   SQL_BIND_NUM(int64, stmt, 3, size, "size");
@@ -170,6 +171,18 @@ long long add_or_get_tag_id(sqlite3 *db, const char *name) {
   SQL_FINALIZE(stmt);
 
   return tag_id;
+}
+
+#define SQL_QUERY_FILE_ID_BY_PATH "SELECT * FROM files WHERE path = ?;"
+
+void query_file_by_path(sqlite3 *db, const char *path, db_query_ctx_t ctx) {
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, SQL_QUERY_FILE_ID_BY_PATH);
+  SQL_BIND(text, stmt, 1, path, "path");
+
+  SQL_STEP(stmt, != SQLITE_ROW);
+  ctx.callback(stmt, ctx.user_data);
+  SQL_FINALIZE(stmt);
 }
 
 #define SQL_INSERT_FILE_TAG                                                    \

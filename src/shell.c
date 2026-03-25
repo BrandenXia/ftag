@@ -59,15 +59,17 @@ void parse_init_opts(init_opts_t *opts, int argc, char **argv) {
 // --------------------------ADD --------------------------
 // clang-format off
 static struct option add_long_opts[] = {
+  {"strict", no_argument, NULL, 's'},
   {"help", no_argument, NULL, 'h'},
   {NULL, 0, NULL, 0}
 };
 // clang-format on
 void parse_add_opts(add_opts_t *opts, int argc, char **argv) {
   int opt;
-  while ((opt = getopt_long(argc, argv, "h", add_long_opts, NULL)) != -1)
+  while ((opt = getopt_long(argc, argv, "sh", add_long_opts, NULL)) != -1)
     // clang-format off
     switch (opt) {
+    case 's': opts->strict = true; break;
     case 'h': fputs(USAGE_STR_ADD, stdout); exit(EXIT_SUCCESS);
     // clang-format on
     case '?':
@@ -85,20 +87,22 @@ void parse_add_opts(add_opts_t *opts, int argc, char **argv) {
 // -------------------------REMOVE -------------------------
 // clang-format off
 static struct option rm_long_opts[] = {
-  {"help", no_argument, NULL, 'h'},
   {"all", no_argument, NULL, 'a'},
   {"force", no_argument, NULL, 'f'},
+  {"strict", no_argument, NULL, 's'},
+  {"help", no_argument, NULL, 'h'},
   {NULL, 0, NULL, 0}
 };
 // clang-format on
 void parse_rm_opts(rm_opts_t *opts, int argc, char **argv) {
   int opt;
-  while ((opt = getopt_long(argc, argv, "haf", rm_long_opts, NULL)) != -1)
+  while ((opt = getopt_long(argc, argv, "afsh", rm_long_opts, NULL)) != -1)
     // clang-format off
     switch (opt) {
-    case 'h': fputs(USAGE_STR_RM, stdout); exit(EXIT_SUCCESS);
     case 'a': opts->all = true; break;
     case 'f': opts->force = true; break;
+    case 's': opts->strict = true; break;
+    case 'h': fputs(USAGE_STR_RM, stdout); exit(EXIT_SUCCESS);
     // clang-format on
     case '?':
       ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
@@ -175,15 +179,17 @@ void parse_query_opts(query_opts_t *opts, int argc, char **argv) {
 // --------------------------SHOW --------------------------
 // clang-format off
 static struct option show_long_opts[] = {
+  {"strict", no_argument, NULL, 's'},
   {"help", no_argument, NULL, 'h'},
   {NULL, 0, NULL, 0}
 };
 // clang-format on
 void parse_show_opts(show_opts_t *opts, int argc, char **argv) {
   int opt;
-  while ((opt = getopt_long(argc, argv, "h", show_long_opts, NULL)) != -1)
+  while ((opt = getopt_long(argc, argv, "sh", show_long_opts, NULL)) != -1)
     // clang-format off
     switch (opt) {
+    case 's': opts->strict = true; break;
     case 'h': fputs(USAGE_STR_SHOW, stdout); exit(EXIT_SUCCESS);
     // clang-format on
     case '?':

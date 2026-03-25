@@ -23,7 +23,7 @@ struct resolve_file_path_result {
 } resolve_file_path(const char *file, const char *data_root, bool verbose);
 
 long long add_or_get_file(sqlite3 *db, const char *real_path,
-                          const char *relative_path, bool verbose);
+                          const char *relative_path, bool strict, bool verbose);
 
 void add_tags(sqlite3 *db, long long file_id, const char **tags,
               size_t tags_count, bool verbose);

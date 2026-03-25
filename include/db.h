@@ -23,8 +23,10 @@ sqlite3 *open_db(const char *path);
 
 void setup_db(sqlite3 *db);
 
-long long add_or_get_file_id(sqlite3 *db, const char *path, bool is_dir,
+long long add_or_update_file(sqlite3 *db, const char *path, bool is_dir,
                              int64_t size, int64_t mtime, uint8_t *hash);
+
+void query_file_by_path(sqlite3 *db, const char *path, db_query_ctx_t ctx);
 
 long long add_or_get_tag_id(sqlite3 *db, const char *name);
 

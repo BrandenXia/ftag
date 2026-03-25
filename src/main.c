@@ -152,8 +152,9 @@ int cmd_add(int argc, char *argv[]) {
   auto resolved =
       resolve_file_path(opts.file, r.data_root, global_opts.verbose);
 
-  long long file_id = add_or_get_file(
-      r.db, resolved.real_path, resolved.relative_path, global_opts.verbose);
+  long long file_id =
+      add_or_get_file(r.db, resolved.real_path, resolved.relative_path,
+                      opts.strict, global_opts.verbose);
   add_tags(r.db, file_id, opts.tags, opts.tags_count, global_opts.verbose);
 
   if (opts.tags_count > 1)
@@ -177,8 +178,9 @@ int cmd_rm(int argc, char *argv[]) {
   auto resolved =
       resolve_file_path(opts.file, r.data_root, global_opts.verbose);
 
-  long long file_id = add_or_get_file(
-      r.db, resolved.real_path, resolved.relative_path, global_opts.verbose);
+  long long file_id =
+      add_or_get_file(r.db, resolved.real_path, resolved.relative_path,
+                      opts.strict, global_opts.verbose);
   if (opts.all)
     remove_all_tags(r.db, file_id);
   else
@@ -245,8 +247,9 @@ int cmd_show(int argc, char *argv[]) {
   auto resolved =
       resolve_file_path(opts.file, r.data_root, global_opts.verbose);
 
-  long long file_id = add_or_get_file(
-      r.db, resolved.real_path, resolved.relative_path, global_opts.verbose);
+  long long file_id =
+      add_or_get_file(r.db, resolved.real_path, resolved.relative_path,
+                      opts.strict, global_opts.verbose);
   show_tags(r.db, file_id);
 
   free(resolved.relative_path);

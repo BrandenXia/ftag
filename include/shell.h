@@ -29,9 +29,9 @@ static const char *USAGE_STR_INIT =
     "Usage: ftag init [options] [directory]\n"
     "\n"
     "Options:\n"
-    "   -h, --help      Show this help message and exit\n"
     "   -f, --force     Force reinitialize even if a database already exists\n"
     "                   (Warning: This will erase all existing tags!)\n"
+    "   -h, --help      Show this help message and exit\n"
     "\n"
     "Arguments:\n"
     "   directory     The directory to initialize the tag database in\n"
@@ -41,16 +41,20 @@ static const char *USAGE_STR_ADD =
     "Usage: ftag add [options] <file> tag1 [tag2 ...]\n"
     "\n"
     "Options:\n"
-    "   -h, --help      Show this help message and exit\n"
-    "   -f, --force     Don't report error if the tag already exists\n";
+    "   -f, --force     Don't report error if the tag already exists\n"
+    "   -s, --strict    Treat file info mismatch as an error instead of "
+    "warning\n"
+    "   -h, --help      Show this help message and exit\n";
 
 static const char *USAGE_STR_RM =
     "Usage: ftag rm [options] <file> tag1 [tag2 ...]\n"
     "\n"
     "Options:\n"
-    "   -h, --help      Show this help message and exit\n"
     "   -a, --all       Remove all tags from the file\n"
-    "   -f, --force     Don't report error if the tag does not exist\n";
+    "   -f, --force     Don't report error if the tag does not exist\n"
+    "   -s, --strict    Treat file info mismatch as an error instead of "
+    "warning\n"
+    "   -h, --help      Show this help message and exit\n";
 
 static const char *USAGE_STR_QUERY =
     "Usage: ftag query [options] tag1 [tag2 ...]\n"
@@ -68,6 +72,8 @@ static const char *USAGE_STR_SHOW =
     "Usage: ftag show [options] <file>\n"
     "\n"
     "Options:\n"
+    "   -s, --strict    Treat file info mismatch as an error instead of "
+    "warning\n"
     "   -h, --help      Show this help message and exit\n";
 
 static const char *USAGE_STR_SYNC =
@@ -86,6 +92,7 @@ typedef struct {
 } init_opts_t;
 
 typedef struct {
+  bool strict;
   const char *file;
   size_t tags_count;
   const char **tags;
@@ -94,6 +101,7 @@ typedef struct {
 typedef struct {
   bool all;
   bool force;
+  bool strict;
   const char *file;
   size_t tags_count;
   const char **tags;
@@ -108,6 +116,7 @@ typedef struct {
 } query_opts_t;
 
 typedef struct {
+  bool strict;
   const char *file;
 } show_opts_t;
 
