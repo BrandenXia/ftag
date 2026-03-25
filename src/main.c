@@ -207,8 +207,22 @@ int cmd_rm(int argc, char *argv[]) {
 }
 
 int cmd_find(int argc, char *argv[]) {
-  find_opts_t opts = {};
+  find_opts_t opts = {0};
   parse_find_opts(&opts, argc, argv);
+  resources_t r;
+  setup_resources(&r, global_opts.verbose);
+
+  char *cwd = realpath(".", NULL);
+  char *relative_cwd = get_relative_path(r.data_root, cwd);
+  free(cwd);
+
+  if (global_opts.verbose)
+    printf("Relative CWD for query: %s\n", relative_cwd);
+
+  query_files(r.db, opts.tags, opts.tags_count, opts.match_mode, relative_cwd);
+
+  free(relative_cwd);
+  cleanup_resources(&r);
 
   return 0;
 }

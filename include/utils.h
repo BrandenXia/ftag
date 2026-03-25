@@ -29,9 +29,10 @@
 int rmrf(const char *path);
 
 /**
- * Computes the relative path from one absolute realpath to another. Note: Both
- * inputs MUST be absolute paths (e.g., as returned by realpath(3)). The
- * returned string is dynamically allocated and must be free()'d by the caller.
+ * Computes the relative path from one path to another. Note: Both inputs MUST
+ * be relative to the same root (e.g. both absolute or both relative to the same
+ * directory). returned string is dynamically allocated and must be free()'d by
+ * the caller.
  */
 char *get_relative_path(const char *from, const char *to);
 

@@ -28,4 +28,20 @@ void remove_file_tag(sqlite3 *db, long long file_id, long long tag_id);
 
 void remove_all_tags(sqlite3 *db, long long file_id);
 
+enum tag_match_mode {
+  TAG_MATCH_OR,
+  TAG_MATCH_AND,
+  TAG_MATCH_RELEVANCE,
+};
+
+typedef void (*file_path_cb_t)(const char *path, void *user_data);
+typedef struct {
+  file_path_cb_t callback;
+  void *user_data;
+} query_context_t;
+
+// Returns the number of files found
+int query_files_by_tags(sqlite3 *db, const char **tags, size_t tags_count,
+                        enum tag_match_mode mode, query_context_t ctx);
+
 #endif

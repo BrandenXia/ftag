@@ -3,6 +3,7 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "utils.h"
 
@@ -118,20 +119,40 @@ void parse_rm_opts(rm_opts_t *opts, int argc, char **argv) {
 // --------------------------FIND --------------------------
 // clang-format off
 static struct option find_long_opts[] = {
+  {"match", required_argument, NULL, 'm'},
   {"help", no_argument, NULL, 'h'},
   {NULL, 0, NULL, 0}
 };
 // clang-format on
-void parse_find_opts(find_opts_t *, int argc, char **argv) {
+void parse_find_opts(find_opts_t *opts, int argc, char **argv) {
   int opt;
-  while ((opt = getopt_long(argc, argv, "h", find_long_opts, NULL)) != -1)
+  opts->match_mode = TAG_MATCH_RELEVANCE; // Default match mode
+
+  while ((opt = getopt_long(argc, argv, "m:h", find_long_opts, NULL)) != -1)
     // clang-format off
     switch (opt) {
+    case 'm':
+      if (strcmp(optarg, "and") == 0)
+        opts->match_mode = TAG_MATCH_AND;
+      else if (strcmp(optarg, "or") == 0)
+        opts->match_mode = TAG_MATCH_OR;
+      else if (strcmp(optarg, "relevance") == 0)
+        opts->match_mode = TAG_MATCH_RELEVANCE;
+      else
+        ERROR_USAGE_EXIT(
+            "Error processing args: Invalid match mode '%s'\n", optarg);
+      break;
     case 'h': fputs(USAGE_STR_FIND, stdout); exit(EXIT_SUCCESS);
     // clang-format on
     case '?':
       ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
     }
+
+  if (argc < optind + 1)
+    ERROR_USAGE_EXIT("Error processing args: Expect at least a tag\n");
+
+  opts->tags_count = argc - optind;
+  opts->tags = (const char **)(argv + optind);
 }
 
 // --------------------------SHOW --------------------------

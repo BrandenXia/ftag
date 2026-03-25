@@ -126,3 +126,24 @@ void remove_tags(sqlite3 *db, long long file_id, const char **tags,
   }
   commit_transaction(db);
 }
+
+void print_file_path(const char *path, void *user_data) {
+  const char *relative_to = user_data;
+  if (strcmp(relative_to, ".") == 0)
+    puts(path);
+  else {
+    char *relative_path = get_relative_path(relative_to, path);
+    puts(relative_path);
+    free(relative_path);
+  }
+}
+
+void query_files(sqlite3 *db, const char **tags, size_t tags_count,
+                 enum tag_match_mode match_mode, const char *relative_to) {
+  int found_count = query_files_by_tags(
+      db, tags, tags_count, match_mode,
+      (query_context_t){print_file_path, (void *)relative_to});
+
+  if (found_count == 0)
+    printf("No files found matching the specified tags.\n");
+}

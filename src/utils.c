@@ -21,11 +21,14 @@ int rmrf(const char *path) {
 }
 
 char *get_relative_path(const char *from, const char *to) {
-  if (!from || !to || from[0] != '/' || to[0] != '/')
+  if (!from || !to)
     return NULL;
 
-  const char *f = from + 1;
-  const char *t = to + 1;
+  if ((from[0] == '/') != (to[0] == '/'))
+    return NULL;
+
+  const char *f = from;
+  const char *t = to;
 
   while (*f && *t) {
     const char *next_f = strchr(f, '/');

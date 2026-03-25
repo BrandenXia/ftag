@@ -117,10 +117,16 @@ sqlite3 *open_db(const char *path) {
   "CREATE TABLE IF NOT EXISTS file_tags (\n" SQL_FILE_TAGS_SCHEMA ");"
 #define SQL_CREATE_SCHEMA                                                      \
   SQL_CREATE_FILES_TABLE SQL_CREATE_TAGS_TABLE SQL_CREATE_FILE_TAGS_TABLE
+#define SQL_ENABLE_FOREIGN_KEYS "PRAGMA foreign_keys = ON;"
+#define SQL_CREATE_FILE_TAGS_INDEX                                             \
+  "CREATE INDEX IF NOT EXISTS idx_file_tags_tag_id ON file_tags(tag_id, "      \
+  "file_id);"
+#define SQL_SETUP_DB                                                           \
+  SQL_ENABLE_FOREIGN_KEYS SQL_CREATE_SCHEMA SQL_CREATE_FILE_TAGS_INDEX
 
 void setup_db(sqlite3 *db) {
   char *errmsg;
-  int err = sqlite3_exec(db, SQL_CREATE_SCHEMA, NULL, NULL, &errmsg);
+  int err = sqlite3_exec(db, SQL_SETUP_DB, NULL, NULL, &errmsg);
   if (err != SQLITE_OK) {
     fprintf(stderr, "Error creating database schema: %s\n", errmsg);
     sqlite3_free(errmsg);
@@ -198,4 +204,64 @@ void remove_all_tags(sqlite3 *db, long long file_id) {
   SQL_BIND_NUM(int64, stmt, 1, file_id, "file_id");
   SQL_STEP(stmt);
   SQL_FINALIZE(stmt);
+}
+
+#define SQL_QUERY_FILES_BY_TAGS_AND                                            \
+  "SELECT files.* FROM files JOIN file_tags ON files.id = file_tags.file_id "  \
+  "JOIN tags ON file_tags.tag_id = tags.id WHERE tags.name IN (%s) GROUP BY "  \
+  "files.id HAVING COUNT(tags.id) = %d;"
+
+#define SQL_QUERY_FILES_BY_TAGS_OR                                             \
+  "SELECT DISTINCT files.* FROM files JOIN file_tags ON files.id = "           \
+  "file_tags.file_id JOIN tags ON file_tags.tag_id = tags.id WHERE tags.name " \
+  "IN (%s);"
+
+#define SQL_QUERY_FILES_BY_TAGS_RELEVANCE                                      \
+  "SELECT files.*, COUNT(tags.id) as match_count FROM files JOIN file_tags "   \
+  "ON files.id = file_tags.file_id JOIN tags ON file_tags.tag_id = tags.id "   \
+  "WHERE tags.name IN (%s) GROUP BY files.id ORDER BY match_count DESC;"
+
+int query_files_by_tags(sqlite3 *db, const char **tags, size_t tags_count,
+                        enum tag_match_mode mode, query_context_t ctx) {
+  const char *template;
+  switch (mode) {
+  case TAG_MATCH_RELEVANCE:
+    template = SQL_QUERY_FILES_BY_TAGS_RELEVANCE;
+    break;
+  case TAG_MATCH_OR:
+    template = SQL_QUERY_FILES_BY_TAGS_OR;
+    break;
+  case TAG_MATCH_AND:
+    template = SQL_QUERY_FILES_BY_TAGS_AND;
+    break;
+  }
+
+  size_t placeholders_len = tags_count * 2;      // "?, ?, ..."
+  char *placeholders = malloc(placeholders_len); // "?, ?, ..."
+  placeholders[0] = '?';
+  placeholders[placeholders_len - 1] = '\0';
+  for (size_t i = 1; i < tags_count; i++) {
+    placeholders[i * 2 - 1] = ',';
+    placeholders[i * 2] = '?';
+  }
+
+  size_t query_len = snprintf(NULL, 0, template, placeholders, tags_count);
+  char *query = malloc(query_len + 1);
+  snprintf(query, query_len + 1, template, placeholders, tags_count);
+
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, query);
+  for (size_t i = 0; i < tags_count; i++)
+    SQL_BIND(text, stmt, i + 1, tags[i], "tag name");
+
+  int count = 0;
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
+    const char *path = (const char *)sqlite3_column_text(stmt, 1);
+    ctx.callback(path, ctx.user_data);
+    count++;
+  }
+
+  SQL_FINALIZE(stmt);
+
+  return count;
 }

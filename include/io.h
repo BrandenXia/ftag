@@ -6,6 +6,7 @@
 
 #include <sqlite3.h>
 
+#include "db.h"
 #include "resource.h"
 
 sqlite3 *init_db(const char *path, bool verbose);
@@ -21,5 +22,8 @@ void add_tags(sqlite3 *db, long long file_id, const char **tags,
 
 void remove_tags(sqlite3 *db, long long file_id, const char **tags,
                  size_t tags_count, bool force, bool verbose);
+
+void query_files(sqlite3 *db, const char **tags, size_t tags_count,
+                 enum tag_match_mode match_mode, const char *relative_to);
 
 #endif

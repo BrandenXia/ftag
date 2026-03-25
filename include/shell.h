@@ -1,6 +1,7 @@
 #ifndef FTAG_SHELL_H
 #define FTAG_SHELL_H
 
+#include "db.h"
 #include <getopt.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -53,7 +54,9 @@ static const char *USAGE_STR_FIND =
     "Usage: ftag find [options] tag1 [tag2 ...]\n"
     "\n"
     "Options:\n"
-    "   -h, --help      Show this help message and exit\n";
+    "   -m, --match MODE  Matching mode (and|or|relevance, default: "
+    "relevance)\n"
+    "   -h, --help        Show this help message and exit\n";
 
 static const char *USAGE_STR_SHOW =
     "Usage: ftag show [options] <file>\n"
@@ -91,6 +94,9 @@ typedef struct {
 } rm_opts_t;
 
 typedef struct {
+  enum tag_match_mode match_mode;
+  size_t tags_count;
+  const char **tags;
 } find_opts_t;
 
 typedef struct {
