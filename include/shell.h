@@ -17,7 +17,7 @@ static const char *USAGE_STR_GLOBAL =
     "   init      Initalize a new tag database under the current directory\n"
     "   add       Add tags to a file\n"
     "   rm        Remove tags from a file\n"
-    "   find      Find files by tags\n"
+    "   query     Query files by tags\n"
     "   show      Show all tags of a file\n"
     "   sync      Sync the tag database with the filesystem"
     "\n"
@@ -50,8 +50,8 @@ static const char *USAGE_STR_RM =
     "   -a, --all       Remove all tags from the file\n"
     "   -f, --force     Don't report error if the tag does not exist\n";
 
-static const char *USAGE_STR_FIND =
-    "Usage: ftag find [options] tag1 [tag2 ...]\n"
+static const char *USAGE_STR_QUERY =
+    "Usage: ftag query [options] tag1 [tag2 ...]\n"
     "\n"
     "Options:\n"
     "   -d, --dir DIR     Only search for files under the specified directory "
@@ -99,11 +99,11 @@ typedef struct {
 
 typedef struct {
   char *dir;
-  enum find_type { FIND_TYPE_FILE, FIND_TYPE_DIR, FIND_TYPE_BOTH } type;
+  enum query_type { QUERY_TYPE_FILE, QUERY_TYPE_DIR, QUERY_TYPE_BOTH } type;
   enum tag_match_mode match_mode;
   size_t tags_count;
   const char **tags;
-} find_opts_t;
+} query_opts_t;
 
 typedef struct {
 } show_opts_t;
@@ -116,7 +116,7 @@ void parse_global_opts (global_opts_t *, int, char *[]);
 void parse_init_opts   (init_opts_t   *, int, char *[]);
 void parse_add_opts    (add_opts_t    *, int, char *[]);
 void parse_rm_opts     (rm_opts_t     *, int, char *[]);
-void parse_find_opts   (find_opts_t   *, int, char *[]);
+void parse_query_opts  (query_opts_t  *, int, char *[]);
 void parse_show_opts   (show_opts_t   *, int, char *[]);
 void parse_sync_opts   (sync_opts_t   *, int, char *[]);
 // clang-format on

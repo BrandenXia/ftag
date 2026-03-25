@@ -17,12 +17,12 @@
 global_opts_t global_opts;
 
 // clang-format off
-int cmd_init (int, char *[]);
-int cmd_add  (int, char *[]);
-int cmd_rm   (int, char *[]);
-int cmd_find (int, char *[]);
-int cmd_show (int, char *[]);
-int cmd_sync (int, char *[]);
+int cmd_init  (int, char *[]);
+int cmd_add   (int, char *[]);
+int cmd_rm    (int, char *[]);
+int cmd_query (int, char *[]);
+int cmd_show  (int, char *[]);
+int cmd_sync  (int, char *[]);
 // clang-format on
 
 int main(int argc, char *argv[]) {
@@ -41,8 +41,8 @@ int main(int argc, char *argv[]) {
     cmd_func = cmd_add;
   else if CMP ("rm")
     cmd_func = cmd_rm;
-  else if CMP ("find")
-    cmd_func = cmd_find;
+  else if CMP ("query")
+    cmd_func = cmd_query;
   else if CMP ("show")
     cmd_func = cmd_show;
   else if CMP ("sync")
@@ -206,9 +206,9 @@ int cmd_rm(int argc, char *argv[]) {
   return 0;
 }
 
-int cmd_find(int argc, char *argv[]) {
-  find_opts_t opts = {0};
-  parse_find_opts(&opts, argc, argv);
+int cmd_query(int argc, char *argv[]) {
+  query_opts_t opts = {0};
+  parse_query_opts(&opts, argc, argv);
   resources_t r;
   setup_resources(&r, global_opts.verbose);
 

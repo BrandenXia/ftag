@@ -130,7 +130,7 @@ void remove_tags(sqlite3 *db, long long file_id, const char **tags,
 struct query_files_ctx {
   const char *relative_to;
   const char *dir;
-  enum find_type type;
+  enum query_type type;
   bool verbose;
 };
 
@@ -146,9 +146,9 @@ void print_file_path(const char *path, bool is_dir, void *user_data) {
       return;
   }
 
-  if (ctx->type == FIND_TYPE_FILE && is_dir)
+  if (ctx->type == QUERY_TYPE_FILE && is_dir)
     return;
-  if (ctx->type == FIND_TYPE_DIR && !is_dir)
+  if (ctx->type == QUERY_TYPE_DIR && !is_dir)
     return;
 
   if (strcmp(relative_to, ".") == 0)
@@ -162,7 +162,7 @@ void print_file_path(const char *path, bool is_dir, void *user_data) {
 
 void query_files(sqlite3 *db, const char **tags, size_t tags_count,
                  enum tag_match_mode match_mode, const char *relative_to,
-                 const char *dir, enum find_type type, bool verbose) {
+                 const char *dir, enum query_type type, bool verbose) {
   struct query_files_ctx ctx = {
       .relative_to = relative_to,
       .dir = dir,

@@ -116,9 +116,9 @@ void parse_rm_opts(rm_opts_t *opts, int argc, char **argv) {
   opts->tags = (const char **)(argv + optind + 1);
 }
 
-// --------------------------FIND --------------------------
+// -------------------------QUERY -------------------------
 // clang-format off
-static struct option find_long_opts[] = {
+static struct option query_long_opts[] = {
   {"dir", required_argument, NULL, 'd'},
   {"type", required_argument, NULL, 't'},
   {"match", required_argument, NULL, 'm'},
@@ -126,23 +126,24 @@ static struct option find_long_opts[] = {
   {NULL, 0, NULL, 0}
 };
 // clang-format on
-void parse_find_opts(find_opts_t *opts, int argc, char **argv) {
+void parse_query_opts(query_opts_t *opts, int argc, char **argv) {
   int opt;
   opts->match_mode = TAG_MATCH_RELEVANCE; // Default match mode
-  opts->type = FIND_TYPE_BOTH;            // Default type
+  opts->type = QUERY_TYPE_BOTH;           // Default type
 
-  while ((opt = getopt_long(argc, argv, "d:t:m:h", find_long_opts, NULL)) != -1)
+  while ((opt = getopt_long(argc, argv, "d:t:m:h", query_long_opts, NULL)) !=
+         -1)
     // clang-format off
     switch (opt) {
     case 'd': opts->dir = optarg; break;
     // clang-format on
     case 't':
       if (strcmp(optarg, "file") == 0)
-        opts->type = FIND_TYPE_FILE;
+        opts->type = QUERY_TYPE_FILE;
       else if (strcmp(optarg, "dir") == 0)
-        opts->type = FIND_TYPE_DIR;
+        opts->type = QUERY_TYPE_DIR;
       else if (strcmp(optarg, "both") == 0)
-        opts->type = FIND_TYPE_BOTH;
+        opts->type = QUERY_TYPE_BOTH;
       else
         ERROR_USAGE_EXIT("Error processing args: Invalid type '%s'\n", optarg);
       break;
@@ -158,7 +159,7 @@ void parse_find_opts(find_opts_t *opts, int argc, char **argv) {
                          optarg);
       break;
     case 'h':
-      fputs(USAGE_STR_FIND, stdout);
+      fputs(USAGE_STR_QUERY, stdout);
       exit(EXIT_SUCCESS);
     case '?':
       ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
