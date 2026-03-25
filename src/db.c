@@ -267,3 +267,24 @@ int query_files_by_tags(sqlite3 *db, const char **tags, size_t tags_count,
 
   return count;
 }
+
+#define SQL_FIND_TAGS_BY_FILE                                                  \
+  "SELECT tags.name FROM tags JOIN file_tags ON tags.id = file_tags.tag_id "   \
+  "WHERE file_tags.file_id = ?;"
+
+int find_tags_by_file(sqlite3 *db, long long file_id, show_tags_context_t ctx) {
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, SQL_FIND_TAGS_BY_FILE);
+  SQL_BIND_NUM(int64, stmt, 1, file_id, "file_id");
+
+  int count = 0;
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
+    const char *tag = (const char *)sqlite3_column_text(stmt, 0);
+    ctx.callback(tag, ctx.user_data);
+    count++;
+  }
+
+  SQL_FINALIZE(stmt);
+
+  return count;
+}

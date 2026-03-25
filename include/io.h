@@ -28,4 +28,6 @@ void query_files(sqlite3 *db, const char **tags, size_t tags_count,
                  enum tag_match_mode match_mode, const char *relative_to,
                  const char *dir, enum query_type type, bool verbose);
 
+void show_tags(sqlite3 *db, long long file_id);
+
 #endif

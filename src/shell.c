@@ -179,7 +179,7 @@ static struct option show_long_opts[] = {
   {NULL, 0, NULL, 0}
 };
 // clang-format on
-void parse_show_opts(show_opts_t *, int argc, char **argv) {
+void parse_show_opts(show_opts_t *opts, int argc, char **argv) {
   int opt;
   while ((opt = getopt_long(argc, argv, "h", show_long_opts, NULL)) != -1)
     // clang-format off
@@ -189,6 +189,11 @@ void parse_show_opts(show_opts_t *, int argc, char **argv) {
     case '?':
       ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
     }
+
+  if (argc < optind + 1)
+    ERROR_USAGE_EXIT("Error processing args: Expect a file or directory\n");
+
+  opts->file = argv[optind];
 }
 
 // --------------------------SYNC --------------------------

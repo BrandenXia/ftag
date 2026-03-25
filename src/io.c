@@ -177,3 +177,9 @@ void query_files(sqlite3 *db, const char **tags, size_t tags_count,
   if (found_count == 0)
     printf("No files found matching the specified tags.\n");
 }
+
+void print_tag(const char *tag, void *) { puts(tag); }
+
+void show_tags(sqlite3 *db, long long file_id) {
+  find_tags_by_file(db, file_id, (show_tags_context_t){print_tag, NULL});
+}

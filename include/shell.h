@@ -107,6 +107,7 @@ typedef struct {
 } query_opts_t;
 
 typedef struct {
+  const char *file;
 } show_opts_t;
 
 typedef struct {

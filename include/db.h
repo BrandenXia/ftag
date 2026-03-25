@@ -44,4 +44,12 @@ typedef struct {
 int query_files_by_tags(sqlite3 *db, const char **tags, size_t tags_count,
                         enum tag_match_mode mode, query_context_t ctx);
 
+typedef void (*tag_cb_t)(const char *tag, void *user_data);
+typedef struct {
+  tag_cb_t callback;
+  void *user_data;
+} show_tags_context_t;
+
+int find_tags_by_file(sqlite3 *db, long long file_id, show_tags_context_t ctx);
+
 #endif

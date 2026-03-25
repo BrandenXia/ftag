@@ -143,20 +143,23 @@ int cmd_init(int argc, char *argv[]) {
   return 0;
 }
 
+#define RESOLVE_FILE_PATH                                                      \
+  char *real_path = realpath(opts.file, NULL);                                 \
+  if (!real_path)                                                              \
+    ERROR_EXIT("Error resolving file path '%s': %s\n", opts.file,              \
+               strerror(errno));                                               \
+  char *relative_path = get_relative_path(r.data_root, real_path);             \
+  if (global_opts.verbose)                                                     \
+    printf("Resolved real path: %s\nRelative path: %s\n", real_path,           \
+           relative_path);
+
 int cmd_add(int argc, char *argv[]) {
   add_opts_t opts = {0};
   parse_add_opts(&opts, argc, argv);
   resources_t r;
   setup_resources(&r, global_opts.verbose);
 
-  char *real_path = realpath(opts.file, NULL);
-  if (!real_path)
-    ERROR_EXIT("Error resolving file path '%s': %s\n", opts.file,
-               strerror(errno));
-  char *relative_path = get_relative_path(r.data_root, real_path);
-  if (global_opts.verbose)
-    printf("Resolved real path: %s\nRelative path: %s\n", real_path,
-           relative_path);
+  RESOLVE_FILE_PATH
 
   long long file_id =
       add_or_get_file(r.db, real_path, relative_path, global_opts.verbose);
@@ -180,14 +183,7 @@ int cmd_rm(int argc, char *argv[]) {
   resources_t r;
   setup_resources(&r, global_opts.verbose);
 
-  char *real_path = realpath(opts.file, NULL);
-  if (!real_path)
-    ERROR_EXIT("Error resolving file path '%s': %s\n", opts.file,
-               strerror(errno));
-  char *relative_path = get_relative_path(r.data_root, real_path);
-  if (global_opts.verbose)
-    printf("Resolved real path: %s\nRelative path: %s\n", real_path,
-           relative_path);
+  RESOLVE_FILE_PATH
 
   long long file_id =
       add_or_get_file(r.db, real_path, relative_path, global_opts.verbose);
@@ -251,6 +247,16 @@ int cmd_query(int argc, char *argv[], bool is_find_cmd) {
 int cmd_show(int argc, char *argv[]) {
   show_opts_t opts = {};
   parse_show_opts(&opts, argc, argv);
+  resources_t r;
+  setup_resources(&r, global_opts.verbose);
+
+  RESOLVE_FILE_PATH
+
+  long long file_id =
+      add_or_get_file(r.db, real_path, relative_path, global_opts.verbose);
+  show_tags(r.db, file_id);
+
+  cleanup_resources(&r);
 
   return 0;
 }
