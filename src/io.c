@@ -152,8 +152,8 @@ struct print_file_ctx {
 };
 
 void print_file_path(sqlite3_stmt *stmt, void *user_data) {
-  const char *path = (const char *)sqlite3_column_text(stmt, 0);
-  bool is_dir = sqlite3_column_int(stmt, 1);
+  const char *path = (const char *)sqlite3_column_text(stmt, 1);
+  bool is_dir = sqlite3_column_int(stmt, 2);
 
   struct print_file_ctx *ctx = user_data;
   const char *relative_to = ctx->relative_to;
