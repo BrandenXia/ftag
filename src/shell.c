@@ -11,9 +11,10 @@
 
 // -------------------------GLOBAL -------------------------
 static struct option global_long_opts[] = {
-    {"verbose", no_argument, NULL, 'v'},
-    {"help", no_argument, NULL, 'h'},
-    {NULL, 0, NULL, 0}};
+  {"verbose", no_argument, NULL, 'v'},
+  {"help", no_argument, NULL, 'h'},
+  {NULL, 0, NULL, 0},
+};
 void parse_global_opts(global_opts_t *opts, int argc, char **argv) {
   int opt;
   while ((opt = getopt_long(argc, argv, "+vh", global_long_opts, NULL)) != -1)
@@ -26,9 +27,10 @@ void parse_global_opts(global_opts_t *opts, int argc, char **argv) {
 
 // --------------------------INIT --------------------------
 static struct option init_long_opts[] = {
-    {"help", no_argument, NULL, 'h'},
-    {"force", no_argument, NULL, 'f'},
-    {NULL, 0, NULL, 0}};
+  {"help", no_argument, NULL, 'h'},
+  {"force", no_argument, NULL, 'f'},
+  {NULL, 0, NULL, 0},
+};
 void parse_init_opts(init_opts_t *opts, int argc, char **argv) {
   int opt;
   while ((opt = getopt_long(argc, argv, "hf", init_long_opts, NULL)) != -1)
@@ -46,9 +48,10 @@ void parse_init_opts(init_opts_t *opts, int argc, char **argv) {
 
 // --------------------------ADD --------------------------
 static struct option add_long_opts[] = {
-    {"strict", no_argument, NULL, 's'},
-    {"help", no_argument, NULL, 'h'},
-    {NULL, 0, NULL, 0}};
+  {"strict", no_argument, NULL, 's'},
+  {"help", no_argument, NULL, 'h'},
+  {NULL, 0, NULL, 0},
+};
 void parse_add_opts(add_opts_t *opts, int argc, char **argv) {
   int opt;
   while ((opt = getopt_long(argc, argv, "sh", add_long_opts, NULL)) != -1)
@@ -68,11 +71,12 @@ void parse_add_opts(add_opts_t *opts, int argc, char **argv) {
 
 // -------------------------REMOVE -------------------------
 static struct option rm_long_opts[] = {
-    {"all", no_argument, NULL, 'a'},
-    {"force", no_argument, NULL, 'f'},
-    {"strict", no_argument, NULL, 's'},
-    {"help", no_argument, NULL, 'h'},
-    {NULL, 0, NULL, 0}};
+  {"all", no_argument, NULL, 'a'},
+  {"force", no_argument, NULL, 'f'},
+  {"strict", no_argument, NULL, 's'},
+  {"help", no_argument, NULL, 'h'},
+  {NULL, 0, NULL, 0},
+};
 void parse_rm_opts(rm_opts_t *opts, int argc, char **argv) {
   int opt;
   while ((opt = getopt_long(argc, argv, "afsh", rm_long_opts, NULL)) != -1)
@@ -98,11 +102,12 @@ void parse_rm_opts(rm_opts_t *opts, int argc, char **argv) {
 
 // -------------------------QUERY -------------------------
 static struct option query_long_opts[] = {
-    {"dir", required_argument, NULL, 'd'},
-    {"type", required_argument, NULL, 't'},
-    {"match", required_argument, NULL, 'm'},
-    {"help", no_argument, NULL, 'h'},
-    {NULL, 0, NULL, 0}};
+  {"dir", required_argument, NULL, 'd'},
+  {"type", required_argument, NULL, 't'},
+  {"match", required_argument, NULL, 'm'},
+  {"help", no_argument, NULL, 'h'},
+  {NULL, 0, NULL, 0},
+};
 void parse_query_opts(query_opts_t *opts, int argc, char **argv) {
   int opt;
   opts->match_mode = TAG_MATCH_RELEVANCE; // Default match mode
@@ -146,9 +151,10 @@ void parse_query_opts(query_opts_t *opts, int argc, char **argv) {
 
 // --------------------------SHOW --------------------------
 static struct option show_long_opts[] = {
-    {"strict", no_argument, NULL, 's'},
-    {"help", no_argument, NULL, 'h'},
-    {NULL, 0, NULL, 0}};
+  {"strict", no_argument, NULL, 's'},
+  {"help", no_argument, NULL, 'h'},
+  {NULL, 0, NULL, 0},
+};
 void parse_show_opts(show_opts_t *opts, int argc, char **argv) {
   int opt;
   while ((opt = getopt_long(argc, argv, "sh", show_long_opts, NULL)) != -1)
