@@ -38,8 +38,8 @@ char *get_relative_path(const char *from, const char *to);
 
 typedef struct {
   bool is_dir;
-  uint64_t size;
-  uint64_t mtime;
+  int64_t size;
+  int64_t mtime;
 } file_info_t;
 
 void get_file_info(const char *path, file_info_t *info);

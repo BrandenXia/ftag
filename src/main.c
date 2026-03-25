@@ -69,7 +69,7 @@ int cmd_init(int argc, char *argv[]) {
     puts("Warning: Force option is enabled. Existing tag database will be "
          "overwritten if it exists.");
     printf("Continue? [y/N] ");
-    char response = getchar();
+    char response = (char)getchar();
     if (response != 'y' && response != 'Y') {
       puts("Aborting initialization.");
       exit(EXIT_SUCCESS);

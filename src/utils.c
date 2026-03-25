@@ -39,8 +39,8 @@ char *get_relative_path(const char *from, const char *to) {
     if (!next_t)
       next_t = t + strlen(t);
 
-    size_t len_f = next_f - f;
-    size_t len_t = next_t - t;
+    size_t len_f = (size_t)(next_f - f);
+    size_t len_t = (size_t)(next_t - t);
 
     if (len_f == len_t && strncmp(f, t, len_f) == 0) {
       f = next_f;
@@ -64,7 +64,7 @@ char *get_relative_path(const char *from, const char *to) {
   if (up_count == 0 && *t == '\0')
     return strdup(".");
 
-  size_t result_len = (up_count * 3) + strlen(t) + 1;
+  size_t result_len = (size_t)(up_count * 3) + strlen(t) + 1;
   char *result = malloc(result_len);
   if (!result)
     return NULL;

@@ -140,7 +140,7 @@ void setup_db(sqlite3 *db) {
   "?) ON CONFLICT(path) DO UPDATE SET path=excluded.path RETURNING id;"
 
 long long add_or_get_file_id(sqlite3 *db, const char *path, bool is_dir,
-                             uint64_t size, uint64_t mtime, uint8_t *hash) {
+                             int64_t size, int64_t mtime, uint8_t *hash) {
   sqlite3_stmt *stmt;
   SQL_PREPARE(stmt, SQL_INSERT_FILE);
   SQL_BIND(text, stmt, 1, path, "path");
@@ -245,14 +245,15 @@ int query_files_by_tags(sqlite3 *db, const char **tags, size_t tags_count,
     placeholders[i * 2] = '?';
   }
 
-  size_t query_len = snprintf(NULL, 0, template, placeholders, tags_count);
+  size_t query_len =
+      (size_t)snprintf(NULL, 0, template, placeholders, tags_count);
   char *query = malloc(query_len + 1);
   snprintf(query, query_len + 1, template, placeholders, tags_count);
 
   sqlite3_stmt *stmt;
   SQL_PREPARE(stmt, query);
   for (size_t i = 0; i < tags_count; i++)
-    SQL_BIND(text, stmt, i + 1, tags[i], "tag name");
+    SQL_BIND(text, stmt, (int)i + 1, tags[i], "tag name");
 
   int count = 0;
   while (sqlite3_step(stmt) == SQLITE_ROW) {

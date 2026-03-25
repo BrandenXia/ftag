@@ -78,7 +78,7 @@ void parse_add_opts(add_opts_t *opts, int argc, char **argv) {
     ERROR_USAGE_EXIT(
         "Error processing args: Expect at least a file and a tag\n");
   opts->file = argv[optind];
-  opts->tags_count = argc - optind - 1;
+  opts->tags_count = (size_t)(argc - optind - 1);
   opts->tags = (const char **)(argv + optind + 1);
 }
 
@@ -112,7 +112,7 @@ void parse_rm_opts(rm_opts_t *opts, int argc, char **argv) {
         "Error processing args: Expect at least a file and a tag\n");
 
   opts->file = argv[optind];
-  opts->tags_count = argc - optind - 1;
+  opts->tags_count = (size_t)(argc - optind - 1);
   opts->tags = (const char **)(argv + optind + 1);
 }
 
@@ -151,7 +151,7 @@ void parse_find_opts(find_opts_t *opts, int argc, char **argv) {
   if (argc < optind + 1)
     ERROR_USAGE_EXIT("Error processing args: Expect at least a tag\n");
 
-  opts->tags_count = argc - optind;
+  opts->tags_count = (size_t)(argc - optind);
   opts->tags = (const char **)(argv + optind);
 }
 
