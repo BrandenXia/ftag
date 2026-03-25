@@ -1,10 +1,11 @@
 #ifndef FTAG_SHELL_H
 #define FTAG_SHELL_H
 
-#include "db.h"
 #include <getopt.h>
 #include <stdbool.h>
 #include <stddef.h>
+
+#include "db.h"
 
 static const char *USAGE_STR_GLOBAL =
     "Usage: ftag [options] <command> [args...]\n"
