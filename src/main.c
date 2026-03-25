@@ -20,9 +20,9 @@ global_opts_t global_opts;
 int cmd_init  (int, char *[]);
 int cmd_add   (int, char *[]);
 int cmd_rm    (int, char *[]);
-int cmd_query (int, char *[]);
 int cmd_show  (int, char *[]);
 int cmd_sync  (int, char *[]);
+int cmd_query (int, char *[], bool is_find_cmd);
 // clang-format on
 
 int main(int argc, char *argv[]) {
@@ -41,12 +41,19 @@ int main(int argc, char *argv[]) {
     cmd_func = cmd_add;
   else if CMP ("rm")
     cmd_func = cmd_rm;
-  else if CMP ("query")
-    cmd_func = cmd_query;
   else if CMP ("show")
     cmd_func = cmd_show;
   else if CMP ("sync")
     cmd_func = cmd_sync;
+  else if CMP ("query") {
+    int shift = optind;
+    optind = 1; // Reset optind for subcommand parsing
+    return cmd_query(argc - shift, argv + shift, false);
+  } else if CMP ("find") {
+    int shift = optind;
+    optind = 1; // Reset optind for subcommand parsing
+    return cmd_query(argc - shift, argv + shift, true);
+  }
 #undef CMP
   else
     ERROR_USAGE_EXIT("Error processing args: Unknown subcommand '%s'\n",
@@ -206,8 +213,10 @@ int cmd_rm(int argc, char *argv[]) {
   return 0;
 }
 
-int cmd_query(int argc, char *argv[]) {
+int cmd_query(int argc, char *argv[], bool is_find_cmd) {
   query_opts_t opts = {0};
+  if (is_find_cmd)
+    opts.dir = ".";
   parse_query_opts(&opts, argc, argv);
   resources_t r;
   setup_resources(&r, global_opts.verbose);
