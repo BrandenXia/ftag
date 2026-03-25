@@ -135,6 +135,7 @@ void parse_find_opts(find_opts_t *opts, int argc, char **argv) {
     // clang-format off
     switch (opt) {
     case 'd': opts->dir = optarg; break;
+    // clang-format on
     case 't':
       if (strcmp(optarg, "file") == 0)
         opts->type = FIND_TYPE_FILE;
@@ -143,8 +144,7 @@ void parse_find_opts(find_opts_t *opts, int argc, char **argv) {
       else if (strcmp(optarg, "both") == 0)
         opts->type = FIND_TYPE_BOTH;
       else
-        ERROR_USAGE_EXIT(
-            "Error processing args: Invalid type '%s'\n", optarg);
+        ERROR_USAGE_EXIT("Error processing args: Invalid type '%s'\n", optarg);
       break;
     case 'm':
       if (strcmp(optarg, "and") == 0)
@@ -154,11 +154,12 @@ void parse_find_opts(find_opts_t *opts, int argc, char **argv) {
       else if (strcmp(optarg, "relevance") == 0)
         opts->match_mode = TAG_MATCH_RELEVANCE;
       else
-        ERROR_USAGE_EXIT(
-            "Error processing args: Invalid match mode '%s'\n", optarg);
+        ERROR_USAGE_EXIT("Error processing args: Invalid match mode '%s'\n",
+                         optarg);
       break;
-    case 'h': fputs(USAGE_STR_FIND, stdout); exit(EXIT_SUCCESS);
-    // clang-format on
+    case 'h':
+      fputs(USAGE_STR_FIND, stdout);
+      exit(EXIT_SUCCESS);
     case '?':
       ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
     }
