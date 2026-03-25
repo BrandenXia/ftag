@@ -219,9 +219,21 @@ int cmd_find(int argc, char *argv[]) {
   if (global_opts.verbose)
     printf("Relative CWD for query: %s\n", relative_cwd);
 
-  query_files(r.db, opts.tags, opts.tags_count, opts.match_mode, relative_cwd);
+  char *dir = NULL;
+  if (opts.dir) {
+    char *dir_absolute = realpath(opts.dir, NULL);
+    if (!dir_absolute)
+      ERROR_EXIT("Error resolving directory path '%s': %s\n", opts.dir,
+                 strerror(errno));
+    dir = get_relative_path(r.data_root, dir_absolute);
+    free(dir_absolute);
+  }
+
+  query_files(r.db, opts.tags, opts.tags_count, opts.match_mode, relative_cwd,
+              dir, opts.type, global_opts.verbose);
 
   free(relative_cwd);
+  free(dir);
   cleanup_resources(&r);
 
   return 0;

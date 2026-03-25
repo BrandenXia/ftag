@@ -258,7 +258,8 @@ int query_files_by_tags(sqlite3 *db, const char **tags, size_t tags_count,
   int count = 0;
   while (sqlite3_step(stmt) == SQLITE_ROW) {
     const char *path = (const char *)sqlite3_column_text(stmt, 1);
-    ctx.callback(path, ctx.user_data);
+    bool is_dir = sqlite3_column_int(stmt, 2);
+    ctx.callback(path, is_dir, ctx.user_data);
     count++;
   }
 

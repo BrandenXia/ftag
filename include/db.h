@@ -34,7 +34,7 @@ enum tag_match_mode {
   TAG_MATCH_RELEVANCE,
 };
 
-typedef void (*file_path_cb_t)(const char *path, void *user_data);
+typedef void (*file_path_cb_t)(const char *path, bool is_dir, void *user_data);
 typedef struct {
   file_path_cb_t callback;
   void *user_data;

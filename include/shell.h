@@ -54,6 +54,10 @@ static const char *USAGE_STR_FIND =
     "Usage: ftag find [options] tag1 [tag2 ...]\n"
     "\n"
     "Options:\n"
+    "   -d, --dir DIR     Only search for files under the specified directory "
+    "(default: none)\n"
+    "   -t, --type        Only search for file or directories (file|dir, "
+    "default: both)\n"
     "   -m, --match MODE  Matching mode (and|or|relevance, default: "
     "relevance)\n"
     "   -h, --help        Show this help message and exit\n";
@@ -94,6 +98,8 @@ typedef struct {
 } rm_opts_t;
 
 typedef struct {
+  char *dir;
+  enum find_type { FIND_TYPE_FILE, FIND_TYPE_DIR, FIND_TYPE_BOTH } type;
   enum tag_match_mode match_mode;
   size_t tags_count;
   const char **tags;

@@ -127,8 +127,30 @@ void remove_tags(sqlite3 *db, long long file_id, const char **tags,
   commit_transaction(db);
 }
 
-void print_file_path(const char *path, void *user_data) {
-  const char *relative_to = user_data;
+struct query_files_ctx {
+  const char *relative_to;
+  const char *dir;
+  enum find_type type;
+  bool verbose;
+};
+
+void print_file_path(const char *path, bool is_dir, void *user_data) {
+  struct query_files_ctx *ctx = user_data;
+  const char *relative_to = ctx->relative_to;
+
+  if (ctx->dir && strcmp(ctx->dir, ".") != 0) {
+    // check if path is under the specified directory
+    // if not, skip it
+    if (strncmp(path, ctx->dir, strlen(ctx->dir)) != 0 ||
+        (path[strlen(ctx->dir)] != '/' && path[strlen(ctx->dir)] != '\0'))
+      return;
+  }
+
+  if (ctx->type == FIND_TYPE_FILE && is_dir)
+    return;
+  if (ctx->type == FIND_TYPE_DIR && !is_dir)
+    return;
+
   if (strcmp(relative_to, ".") == 0)
     puts(path);
   else {
@@ -139,10 +161,18 @@ void print_file_path(const char *path, void *user_data) {
 }
 
 void query_files(sqlite3 *db, const char **tags, size_t tags_count,
-                 enum tag_match_mode match_mode, const char *relative_to) {
-  int found_count = query_files_by_tags(
-      db, tags, tags_count, match_mode,
-      (query_context_t){print_file_path, (void *)relative_to});
+                 enum tag_match_mode match_mode, const char *relative_to,
+                 const char *dir, enum find_type type, bool verbose) {
+  struct query_files_ctx ctx = {
+      .relative_to = relative_to,
+      .dir = dir,
+      .type = type,
+      .verbose = verbose,
+  };
+
+  int found_count =
+      query_files_by_tags(db, tags, tags_count, match_mode,
+                          (query_context_t){print_file_path, &ctx});
 
   if (found_count == 0)
     printf("No files found matching the specified tags.\n");

@@ -119,6 +119,8 @@ void parse_rm_opts(rm_opts_t *opts, int argc, char **argv) {
 // --------------------------FIND --------------------------
 // clang-format off
 static struct option find_long_opts[] = {
+  {"dir", required_argument, NULL, 'd'},
+  {"type", required_argument, NULL, 't'},
   {"match", required_argument, NULL, 'm'},
   {"help", no_argument, NULL, 'h'},
   {NULL, 0, NULL, 0}
@@ -127,10 +129,23 @@ static struct option find_long_opts[] = {
 void parse_find_opts(find_opts_t *opts, int argc, char **argv) {
   int opt;
   opts->match_mode = TAG_MATCH_RELEVANCE; // Default match mode
+  opts->type = FIND_TYPE_BOTH;            // Default type
 
-  while ((opt = getopt_long(argc, argv, "m:h", find_long_opts, NULL)) != -1)
+  while ((opt = getopt_long(argc, argv, "d:t:m:h", find_long_opts, NULL)) != -1)
     // clang-format off
     switch (opt) {
+    case 'd': opts->dir = optarg; break;
+    case 't':
+      if (strcmp(optarg, "file") == 0)
+        opts->type = FIND_TYPE_FILE;
+      else if (strcmp(optarg, "dir") == 0)
+        opts->type = FIND_TYPE_DIR;
+      else if (strcmp(optarg, "both") == 0)
+        opts->type = FIND_TYPE_BOTH;
+      else
+        ERROR_USAGE_EXIT(
+            "Error processing args: Invalid type '%s'\n", optarg);
+      break;
     case 'm':
       if (strcmp(optarg, "and") == 0)
         opts->match_mode = TAG_MATCH_AND;
