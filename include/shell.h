@@ -21,7 +21,7 @@ static const char *USAGE_STR_GLOBAL =
     "   query     Query files by tags\n"
     "   find      Alias for 'query --dir .'\n"
     "   show      Show all tags of a file\n"
-    "   sync      Sync the tag database with the filesystem"
+    "   sync      Sync the tag database with the filesystem\n"
     "\n"
     "To get help for a specific command, run 'ftag <command> --help'\n";
 
