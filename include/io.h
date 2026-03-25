@@ -15,6 +15,13 @@ sqlite3 *init_db(const char *path, bool verbose);
 void setup_resources(resources_t *r, bool verbose);
 void cleanup_resources(resources_t *r);
 
+// This function allocates memory for the real_path and relative_path in the
+// returned struct, the caller is responsible for freeing them
+struct resolve_file_path_result {
+  char *real_path;
+  char *relative_path;
+} resolve_file_path(const char *file, const char *data_root, bool verbose);
+
 long long add_or_get_file(sqlite3 *db, const char *real_path,
                           const char *relative_path, bool verbose);
 

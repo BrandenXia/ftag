@@ -1,5 +1,6 @@
 #include "io.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,6 +50,22 @@ void cleanup_resources(resources_t *r) {
   free(r->db_path);
   free(r->data_root);
   free(r->data_path);
+}
+
+struct resolve_file_path_result {
+  char *real_path;
+  char *relative_path;
+} resolve_file_path(const char *file, const char *data_root, bool verbose) {
+
+  char *real_path = realpath(file, NULL);
+  if (!real_path)
+    ERROR_EXIT("Error resolving file path '%s': %s\n", file, strerror(errno));
+  char *relative_path = get_relative_path(data_root, real_path);
+  if (verbose)
+    printf("Resolved real path: %s\nRelative path: %s\n", real_path,
+           relative_path);
+
+  return (struct resolve_file_path_result){real_path, relative_path};
 }
 
 long long add_or_get_file(sqlite3 *db, const char *real_path,
