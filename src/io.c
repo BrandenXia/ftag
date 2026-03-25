@@ -52,10 +52,8 @@ void cleanup_resources(resources_t *r) {
   free(r->data_path);
 }
 
-struct resolve_file_path_result {
-  char *real_path;
-  char *relative_path;
-} resolve_file_path(const char *file, const char *data_root, bool verbose) {
+struct resolve_file_path_result
+resolve_file_path(const char *file, const char *data_root, bool verbose) {
 
   char *real_path = realpath(file, NULL);
   if (!real_path)
