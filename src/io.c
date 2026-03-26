@@ -524,7 +524,10 @@ void sync_tags(sqlite3 *db, const char *data_root, bool dry_run, bool deep,
       printf("Resolved missing file '%s' to existing path '%s'\n",
              missing_file.path, relative_path);
 
-      if (dry_run) continue;
+      if (dry_run) {
+        missing_resolved_count++;
+        continue;
+      }
 
       if (!confirm) {
         printf("Confirm update? ([Y]es/[N]o/[D]elete entry): ");
@@ -538,7 +541,7 @@ void sync_tags(sqlite3 *db, const char *data_root, bool dry_run, bool deep,
         if (choice == 'n')
           continue;
         else if (choice == 'd') {
-          delete_file(ctx.db, missing_file.id);
+          if (!dry_run) delete_file(ctx.db, missing_file.id);
           deleted_count++;
           continue;
         }
@@ -625,7 +628,7 @@ void sync_tags(sqlite3 *db, const char *data_root, bool dry_run, bool deep,
         printf("Invalid choice, please enter r, d, or s: ");
       }
       if (choice == 'd') {
-        delete_file(ctx.db, missing_file.id);
+        if (!dry_run) delete_file(ctx.db, missing_file.id);
         deleted_count++;
         continue;
       } else if (choice == 's')
@@ -644,7 +647,10 @@ void sync_tags(sqlite3 *db, const char *data_root, bool dry_run, bool deep,
     }
 
   resolved:
-    if (dry_run) continue;
+    if (dry_run) {
+      missing_resolved_count++;
+      continue;
+    }
 
     file_info_t info;
     get_file_info(resolved_path, &info);
