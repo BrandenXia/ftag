@@ -14,8 +14,7 @@
 
 int hash_file(const char *path, uint8_t out[32]) {
   FILE *f = fopen(path, "rb");
-  if (!f)
-    return -1;
+  if (!f) return -1;
 
   blake3_hasher hasher;
   blake3_hasher_init(&hasher);
@@ -73,17 +72,14 @@ int hash_dir(const char *root, uint8_t out[32]) {
   char *paths[] = {(char *)root, NULL};
 
   FTS *fts = fts_open(paths, FTS_PHYSICAL, fts_compare);
-  if (!fts)
-    return -1;
+  if (!fts) return -1;
 
   sstack_t stack;
   stack_init(&stack);
 
   FTSENT *ent;
-
-  while ((ent = fts_read(fts)) != NULL) {
+  while ((ent = fts_read(fts)) != NULL)
     switch (ent->fts_info) {
-
     case FTS_D: {
       // Enter directory → push new hasher
       hash_ctx ctx;
@@ -100,7 +96,6 @@ int hash_dir(const char *root, uint8_t out[32]) {
       }
       break;
     }
-
     case FTS_F: {
       hash_ctx *ctx = stack_top(&stack);
 
@@ -111,14 +106,12 @@ int hash_dir(const char *root, uint8_t out[32]) {
 
       // Hash file content
       uint8_t file_hash[32];
-      if (hash_file(ent->fts_path, file_hash) == 0) {
+      if (hash_file(ent->fts_path, file_hash) == 0)
         blake3_hasher_update(&ctx->hasher, file_hash, 32);
-      }
 
       blake3_hasher_update(&ctx->hasher, "\0", 1);
       break;
     }
-
     case FTS_DP: {
       // Leaving directory → finalize
       hash_ctx ctx = stack_pop(&stack);
@@ -126,10 +119,10 @@ int hash_dir(const char *root, uint8_t out[32]) {
       uint8_t dir_hash[32];
       blake3_hasher_finalize(&ctx.hasher, dir_hash, 32);
 
-      if (stack.size == 0) {
+      if (stack.size == 0)
         // root directory
         memcpy(out, dir_hash, 32);
-      } else {
+      else {
         // feed into parent
         hash_ctx *parent = stack_top(&stack);
         blake3_hasher_update(&parent->hasher, dir_hash, 32);
@@ -137,12 +130,10 @@ int hash_dir(const char *root, uint8_t out[32]) {
       }
       break;
     }
-
     default:
       // Ignore symlinks, errors, etc. for now
       break;
     }
-  }
 
   fts_close(fts);
   stack_free(&stack);

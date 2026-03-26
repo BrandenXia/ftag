@@ -26,6 +26,11 @@ void setup_db(sqlite3 *db);
 long long add_or_update_file(sqlite3 *db, const char *path, bool is_dir,
                              int64_t size, int64_t mtime, uint8_t *hash);
 
+void update_file(sqlite3 *db, long long file_id, const char *path, bool is_dir,
+                 int64_t size, int64_t mtime, uint8_t *hash);
+
+void delete_file(sqlite3 *db, long long file_id);
+
 void query_file_by_path(sqlite3 *db, const char *path, db_query_ctx_t ctx);
 
 long long add_or_get_tag_id(sqlite3 *db, const char *name);
@@ -48,5 +53,7 @@ int query_files_by_tags(sqlite3 *db, const char **tags, size_t tags_count,
 
 // Returns the number of files found
 int query_tags_by_file(sqlite3 *db, long long file_id, db_query_ctx_t ctx);
+
+void iter_files(sqlite3 *db, db_query_ctx_t ctx);
 
 #endif

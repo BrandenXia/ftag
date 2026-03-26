@@ -37,4 +37,7 @@ void query_files(sqlite3 *db, const char **tags, size_t tags_count,
 
 void show_tags(sqlite3 *db, long long file_id);
 
+void sync_tags(sqlite3 *db, const char *data_root, bool dry_run, bool deep,
+               bool confirm, bool verbose);
+
 #endif

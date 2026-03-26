@@ -80,6 +80,10 @@ static const char *USAGE_STR_SYNC =
     "Usage: ftag sync [options]\n"
     "\n"
     "Options:\n"
+    "   --dry-run       Don't actually update the database, just show what "
+    "would be done\n"
+    "   --deep          Force full hash verification\n"
+    "   -y, --yes       Automatically confirm all prompts\n"
     "   -h, --help      Show this help message and exit\n";
 
 typedef struct {
@@ -121,6 +125,9 @@ typedef struct {
 } show_opts_t;
 
 typedef struct {
+  bool dry_run;
+  bool deep;
+  bool yes;
 } sync_opts_t;
 
 // clang-format off

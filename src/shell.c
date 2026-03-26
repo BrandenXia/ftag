@@ -171,16 +171,20 @@ void parse_show_opts(show_opts_t *opts, int argc, char **argv) {
 }
 
 // --------------------------SYNC --------------------------
-// clang-format off
 static struct option sync_long_opts[] = {
+  {"dry-run", no_argument, NULL, 'd'},
+  {"deep", no_argument, NULL, 'D'},
+  {"yes", no_argument, NULL, 'y'},
   {"help", no_argument, NULL, 'h'},
-  {NULL, 0, NULL, 0}
+  {NULL, 0, NULL, 0},
 };
-// clang-format on
-void parse_sync_opts(sync_opts_t *, int argc, char **argv) {
+void parse_sync_opts(sync_opts_t *opts, int argc, char **argv) {
   int opt;
   while ((opt = getopt_long(argc, argv, "h", sync_long_opts, NULL)) != -1)
     switch (opt) {
+    case 'd': opts->dry_run = true; break;
+    case 'D': opts->deep = true; break;
+    case 'y': opts->yes = true; break;
     case 'h': fputs(USAGE_STR_SYNC, stdout); exit(EXIT_SUCCESS);
     case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
     }

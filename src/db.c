@@ -168,6 +168,36 @@ long long add_or_get_tag_id(sqlite3 *db, const char *name) {
   return tag_id;
 }
 
+#define SQL_UPDATE_FILE                                                        \
+  "UPDATE files SET path = ?, is_dir = ?, size = ?, mtime = ?, hash = ? "      \
+  "WHERE id = ?;"
+
+void update_file(sqlite3 *db, long long file_id, const char *path, bool is_dir,
+                 int64_t size, int64_t mtime, uint8_t *hash) {
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, SQL_UPDATE_FILE);
+  SQL_BIND(text, stmt, 1, path, "path");
+  SQL_BIND_NUM(int, stmt, 2, is_dir, "is_dir");
+  SQL_BIND_NUM(int64, stmt, 3, size, "size");
+  SQL_BIND_NUM(int64, stmt, 4, mtime, "mtime");
+  SQL_BIND_BLOB(stmt, 5, hash, 32, "hash");
+  SQL_BIND_NUM(int64, stmt, 6, file_id, "file_id");
+
+  SQL_STEP(stmt);
+  SQL_FINALIZE(stmt);
+}
+
+#define SQL_DELETE_FILE "DELETE FROM files WHERE id = ?;"
+
+void delete_file(sqlite3 *db, long long file_id) {
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, SQL_DELETE_FILE);
+  SQL_BIND_NUM(int64, stmt, 1, file_id, "file_id");
+
+  SQL_STEP(stmt);
+  SQL_FINALIZE(stmt);
+}
+
 #define SQL_QUERY_FILE_ID_BY_PATH "SELECT * FROM files WHERE path = ?;"
 
 void query_file_by_path(sqlite3 *db, const char *path, db_query_ctx_t ctx) {
@@ -286,4 +316,14 @@ int query_tags_by_file(sqlite3 *db, long long file_id, db_query_ctx_t ctx) {
   SQL_FINALIZE(stmt);
 
   return count;
+}
+
+void iter_files(sqlite3 *db, db_query_ctx_t ctx) {
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, "SELECT * FROM files;");
+
+  while (sqlite3_step(stmt) == SQLITE_ROW)
+    ctx.callback(stmt, ctx.user_data);
+
+  SQL_FINALIZE(stmt);
 }

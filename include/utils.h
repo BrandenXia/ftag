@@ -44,4 +44,12 @@ typedef struct {
 
 void get_file_info(const char *path, file_info_t *info);
 
+// Concatenate two paths, an optional buf can be provided to avoid allocation if
+// the caller can guarantee it's large enough.
+// Returns a pointer to the resulting string, which is either the provided buf
+// or the newly allocated string (if buf is NULL). The caller is responsible for
+// free()'ing the returned string if buf is NULL.
+char *concat_paths(const char *base, const char *relative, char *buf,
+                   size_t buf_size);
+
 #endif

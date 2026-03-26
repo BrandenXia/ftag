@@ -83,18 +83,15 @@ int cmd_init(int argc, char *argv[]) {
     }
   }
 
-  if (global_opts.verbose)
-    puts("Resolving directory path...");
+  if (global_opts.verbose) puts("Resolving directory path...");
   char *path = realpath(opts.dir, NULL);
   if (!path)
     ERROR_EXIT("Error resolving directory path '%s': %s", opts.dir,
                strerror(errno));
 
-  if (global_opts.verbose)
-    printf("Resolved directory path: %s\n", path);
+  if (global_opts.verbose) printf("Resolved directory path: %s\n", path);
 
-  if (global_opts.verbose)
-    puts("Constructing database folder path...");
+  if (global_opts.verbose) puts("Constructing database folder path...");
   char *data_path = get_data_path(path);
   free(path);
   if (global_opts.verbose)
@@ -117,25 +114,21 @@ int cmd_init(int argc, char *argv[]) {
   } else if (errno != ENOENT)
     PERROR_EXIT("Error checking directory");
 
-  if (global_opts.verbose)
-    puts("Creating database directory...");
+  if (global_opts.verbose) puts("Creating database directory...");
   if (mkdir(data_path, 0755) != 0)
     PERROR_EXIT("Error creating database directory");
 
-  if (global_opts.verbose)
-    puts("Constructing database file path...");
+  if (global_opts.verbose) puts("Constructing database file path...");
   char *db_path = get_db_path(data_path);
   if (global_opts.verbose)
     printf("Constructed database file path: %s\n", db_path);
 
-  if (global_opts.verbose)
-    puts("Initializing database...");
+  if (global_opts.verbose) puts("Initializing database...");
   sqlite3 *db = init_db(db_path, global_opts.verbose);
 
   printf("Tag database initialized in '%s'\n", data_path);
 
-  if (global_opts.verbose)
-    puts("Closing database connection...");
+  if (global_opts.verbose) puts("Closing database connection...");
   sqlite3_close(db);
   free(db_path);
   free(data_path);
@@ -205,8 +198,7 @@ int cmd_rm(int argc, char *argv[]) {
 
 int cmd_query(int argc, char *argv[], bool is_find_cmd) {
   query_opts_t opts = {0};
-  if (is_find_cmd)
-    opts.dir = ".";
+  if (is_find_cmd) opts.dir = ".";
   parse_query_opts(&opts, argc, argv);
   resources_t r;
   setup_resources(&r, global_opts.verbose);
@@ -215,8 +207,7 @@ int cmd_query(int argc, char *argv[], bool is_find_cmd) {
   char *relative_cwd = get_relative_path(r.data_root, cwd);
   free(cwd);
 
-  if (global_opts.verbose)
-    printf("Relative CWD for query: %s\n", relative_cwd);
+  if (global_opts.verbose) printf("Relative CWD for query: %s\n", relative_cwd);
 
   char *dir = NULL;
   if (opts.dir) {
@@ -262,6 +253,14 @@ int cmd_show(int argc, char *argv[]) {
 int cmd_sync(int argc, char *argv[]) {
   sync_opts_t opts = {};
   parse_sync_opts(&opts, argc, argv);
+
+  resources_t r;
+  setup_resources(&r, global_opts.verbose);
+
+  sync_tags(r.db, r.data_root, opts.dry_run, opts.deep, opts.yes,
+            global_opts.verbose);
+
+  cleanup_resources(&r);
 
   return 0;
 }
