@@ -524,11 +524,6 @@ void sync_tags(sqlite3 *db, const char *data_root, bool dry_run, bool deep,
       printf("Resolved missing file '%s' to existing path '%s'\n",
              missing_file.path, relative_path);
 
-      if (dry_run) {
-        missing_resolved_count++;
-        continue;
-      }
-
       if (!confirm) {
         printf("Confirm update? ([Y]es/[N]o/[D]elete entry): ");
         char choice;
@@ -647,11 +642,6 @@ void sync_tags(sqlite3 *db, const char *data_root, bool dry_run, bool deep,
     }
 
   resolved:
-    if (dry_run) {
-      missing_resolved_count++;
-      continue;
-    }
-
     file_info_t info;
     get_file_info(resolved_path, &info);
     uint8_t hash[32];
@@ -661,8 +651,9 @@ void sync_tags(sqlite3 *db, const char *data_root, bool dry_run, bool deep,
     else
       err = hash_file(resolved_path, hash);
     if (err != 0) ERROR_EXIT("Error hashing file: %s\n", resolved_path);
-    update_file(ctx.db, missing_file.id, relative_path, info.is_dir, info.size,
-                info.mtime, hash);
+    if (!dry_run)
+      update_file(ctx.db, missing_file.id, relative_path, info.is_dir,
+                  info.size, info.mtime, hash);
 
     printf("Updated file '%s' in database to point to resolved path '%s'\n",
            missing_file.path, relative_path);
