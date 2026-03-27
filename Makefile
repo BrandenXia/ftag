@@ -1,7 +1,7 @@
 MODE ?= DEBUG
 CC ?= clang
 
-CFLAGS := -Wall -Wextra -Werror -Wshadow -Wconversion -Wsign-conversion -Wimplicit-fallthrough -std=c23
+CFLAGS := -Wall -Wextra -Wpedantic -Werror -Wshadow -Wconversion -Wsign-conversion -Wimplicit-fallthrough -std=c23
 CFLAGS_DEBUG := -g -O0
 CFLAGS_RELEASE := -O3
 
