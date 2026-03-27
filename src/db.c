@@ -205,8 +205,7 @@ void query_file_by_path(sqlite3 *db, const char *path, db_query_ctx_t ctx) {
   SQL_PREPARE(stmt, SQL_QUERY_FILE_ID_BY_PATH);
   SQL_BIND(text, stmt, 1, path, "path");
 
-  SQL_STEP(stmt, != SQLITE_ROW);
-  ctx.callback(stmt, ctx.user_data);
+  if (sqlite3_step(stmt) == SQLITE_ROW) ctx.callback(stmt, ctx.user_data);
   SQL_FINALIZE(stmt);
 }
 
