@@ -104,6 +104,8 @@ sqlite3 *open_db(const char *path) {
   return db;
 }
 
+int register_regexp_extension(sqlite3 *db);
+
 #define SQL_CREATE_FILES_TABLE                                                 \
   "CREATE TABLE IF NOT EXISTS files (\n" SQL_FILES_SCHEMA ");"
 #define SQL_CREATE_TAGS_TABLE                                                  \
@@ -128,6 +130,7 @@ void setup_db(sqlite3 *db) {
     sqlite3_close(db);
     exit(EXIT_FAILURE);
   }
+  register_regexp_extension(db);
 }
 
 #define SQL_INSERT_UPDATE_FILE                                                 \
