@@ -100,6 +100,29 @@ void parse_rm_opts(rm_opts_t *opts, int argc, char **argv) {
   opts->tags = (const char **)(argv + optind + 1);
 }
 
+// -------------------------COPY -------------------------
+static struct option copy_long_opts[] = {
+  {"strict", no_argument, NULL, 's'},
+  {"help", no_argument, NULL, 'h'},
+  {NULL, 0, NULL, 0},
+};
+void parse_copy_opts(copy_opts_t *opts, int argc, char **argv) {
+  int opt;
+  while ((opt = getopt_long(argc, argv, "sh", copy_long_opts, NULL)) != -1)
+    switch (opt) {
+    case 's': opts->strict = true; break;
+    case 'h': fputs(USAGE_STR_COPY, stdout); exit(EXIT_SUCCESS);
+    case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
+    }
+
+  if (argc < optind + 2)
+    ERROR_USAGE_EXIT(
+        "Error processing args: Expect at least a source and a destination\n");
+
+  opts->src = argv[optind];
+  opts->dst = argv[optind + 1];
+}
+
 // -------------------------QUERY -------------------------
 static struct option query_long_opts[] = {
   {"dir", required_argument, NULL, 'd'},

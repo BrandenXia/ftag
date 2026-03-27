@@ -20,6 +20,7 @@ global_opts_t global_opts;
 int cmd_init  (int, char *[]);
 int cmd_add   (int, char *[]);
 int cmd_rm    (int, char *[]);
+int cmd_copy  (int, char *[]);
 int cmd_show  (int, char *[]);
 int cmd_sync  (int, char *[]);
 int cmd_query (int, char *[], bool is_find_cmd);
@@ -41,6 +42,8 @@ int main(int argc, char *argv[]) {
     cmd_func = cmd_add;
   else if CMP ("rm")
     cmd_func = cmd_rm;
+  else if CMP ("copy")
+    cmd_func = cmd_copy;
   else if CMP ("show")
     cmd_func = cmd_show;
   else if CMP ("sync")
@@ -191,6 +194,39 @@ int cmd_rm(int argc, char *argv[]) {
 
   free(resolved.relative_path);
   free(resolved.real_path);
+  cleanup_resources(&r);
+
+  return 0;
+}
+
+int cmd_copy(int argc, char *argv[]) {
+  copy_opts_t opts = {0};
+  parse_copy_opts(&opts, argc, argv);
+  resources_t r;
+  setup_resources(&r, global_opts.verbose);
+
+  auto resolved_src =
+      resolve_file_path(opts.src, r.data_root, global_opts.verbose);
+  auto resolved_dst =
+      resolve_file_path(opts.dst, r.data_root, global_opts.verbose);
+
+  auto src_id =
+      add_or_get_file(r.db, resolved_src.real_path, resolved_src.relative_path,
+                      opts.strict, global_opts.verbose);
+  auto dst_id =
+      add_or_get_file(r.db, resolved_dst.real_path, resolved_dst.relative_path,
+                      opts.strict, global_opts.verbose);
+
+  copy_file_tags(r.db, src_id, dst_id);
+
+  int copied_count = sqlite3_changes(r.db);
+  printf("Updated file '%s' with %d tags from file '%s'\n", opts.dst,
+         copied_count, opts.src);
+
+  free(resolved_dst.real_path);
+  free(resolved_dst.relative_path);
+  free(resolved_src.real_path);
+  free(resolved_src.relative_path);
   cleanup_resources(&r);
 
   return 0;

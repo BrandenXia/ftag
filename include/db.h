@@ -41,6 +41,8 @@ void remove_file_tag(sqlite3 *db, long long file_id, long long tag_id);
 
 void remove_all_tags(sqlite3 *db, long long file_id);
 
+void copy_file_tags(sqlite3 *db, long long src_file_id, long long dst_file_id);
+
 enum tag_match_mode {
   TAG_MATCH_OR,
   TAG_MATCH_AND,

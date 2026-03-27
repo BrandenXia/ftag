@@ -243,6 +243,19 @@ void remove_all_tags(sqlite3 *db, long long file_id) {
   SQL_FINALIZE(stmt);
 }
 
+#define SQL_COPY_FILE_TAGS                                                     \
+  "INSERT INTO file_tags (file_id, tag_id) SELECT ?, tag_id FROM file_tags "   \
+  "WHERE file_id = ? ON CONFLICT(file_id, tag_id) DO NOTHING;"
+
+void copy_file_tags(sqlite3 *db, long long src_file_id, long long dst_file_id) {
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, SQL_COPY_FILE_TAGS);
+  SQL_BIND_NUM(int64, stmt, 1, dst_file_id, "dst_file_id");
+  SQL_BIND_NUM(int64, stmt, 2, src_file_id, "src_file_id");
+  SQL_STEP(stmt);
+  SQL_FINALIZE(stmt);
+}
+
 #define SQL_QUERY_FILES_BY_TAGS_AND                                            \
   "SELECT files.* FROM files JOIN file_tags ON files.id = file_tags.file_id "  \
   "JOIN tags ON file_tags.tag_id = tags.id WHERE tags.name IN (%s) GROUP BY "  \

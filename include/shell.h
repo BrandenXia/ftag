@@ -18,6 +18,7 @@ static const char *USAGE_STR_GLOBAL =
     "   init      Initalize a new tag database under the current directory\n"
     "   add       Add tags to a file\n"
     "   rm        Remove tags from a file\n"
+    "   copy      Copy tags from one file to another\n"
     "   query     Query files by tags\n"
     "   find      Alias for 'query --dir .'\n"
     "   show      Show all tags of a file\n"
@@ -52,6 +53,14 @@ static const char *USAGE_STR_RM =
     "Options:\n"
     "   -a, --all       Remove all tags from the file\n"
     "   -f, --force     Don't report error if the tag does not exist\n"
+    "   -s, --strict    Treat file info mismatch as an error instead of "
+    "warning\n"
+    "   -h, --help      Show this help message and exit\n";
+
+static const char *USAGE_STR_COPY =
+    "Usage: ftag copy [options] <src> <dst>\n"
+    "\n"
+    "Options:\n"
     "   -s, --strict    Treat file info mismatch as an error instead of "
     "warning\n"
     "   -h, --help      Show this help message and exit\n";
@@ -112,6 +121,12 @@ typedef struct {
 } rm_opts_t;
 
 typedef struct {
+  bool strict;
+  const char *src;
+  const char *dst;
+} copy_opts_t;
+
+typedef struct {
   char *dir;
   enum query_type { QUERY_TYPE_FILE, QUERY_TYPE_DIR, QUERY_TYPE_BOTH } type;
   enum tag_match_mode match_mode;
@@ -135,6 +150,7 @@ void parse_global_opts (global_opts_t *, int, char *[]);
 void parse_init_opts   (init_opts_t   *, int, char *[]);
 void parse_add_opts    (add_opts_t    *, int, char *[]);
 void parse_rm_opts     (rm_opts_t     *, int, char *[]);
+void parse_copy_opts   (copy_opts_t   *, int, char *[]);
 void parse_query_opts  (query_opts_t  *, int, char *[]);
 void parse_show_opts   (show_opts_t   *, int, char *[]);
 void parse_sync_opts   (sync_opts_t   *, int, char *[]);
