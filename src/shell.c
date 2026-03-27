@@ -107,7 +107,7 @@ void parse_rm_opts(rm_opts_t *opts, int argc, char **argv) {
   opts->tags = (const char **)(argv + optind + 1);
 }
 
-// -------------------------COPY -------------------------
+// --------------------------COPY --------------------------
 static struct option copy_long_opts[] = {
   {"strict", no_argument, NULL, 's'},
   {"help", no_argument, NULL, 'h'},
@@ -135,7 +135,35 @@ void parse_copy_opts(copy_opts_t *opts, int argc, char **argv) {
   opts->dst = argv[optind + 1];
 }
 
-// -------------------------QUERY -------------------------
+// -------------------------RENAME -------------------------
+static struct option rename_long_opts[] = {
+  {"force", no_argument, NULL, 'f'},
+  {"help", no_argument, NULL, 'h'},
+  {NULL, 0, NULL, 0},
+};
+void parse_rename_opts(rename_opts_t *opts, int argc, char **argv) {
+  int opt;
+  while ((opt = getopt_long(argc, argv, "fh", rename_long_opts, NULL)) != -1)
+    switch (opt) {
+    case 'f': opts->force = true; break;
+    case 'h': fputs(USAGE_STR_RENAME, stdout); exit(EXIT_SUCCESS);
+    case '?': ERROR_USAGE_EXIT(USAGE_STR_RENAME, UNKOWN_OPT_MSG, optopt);
+    }
+
+  if (argc < optind + 2)
+    ERROR_USAGE_EXIT(
+        USAGE_STR_RENAME,
+        "Error processing args: Expect at least an old tag and a new tag\n");
+  if (argc > optind + 2)
+    ERROR_USAGE_EXIT(
+        USAGE_STR_RENAME,
+        "Error processing args: Expect at most an old tag and a new tag\n");
+
+  opts->old_tag = argv[optind];
+  opts->new_tag = argv[optind + 1];
+}
+
+// -------------------------QUERY --------------------------
 static struct option query_long_opts[] = {
   {"dir", required_argument, NULL, 'd'},
   {"type", required_argument, NULL, 't'},

@@ -189,6 +189,34 @@ void remove_tags(sqlite3 *db, long long file_id, const char **tags,
   commit_transaction(db);
 }
 
+void rename_tag(sqlite3 *db, const char *old_name, const char *new_name,
+                bool force, bool verbose) {
+  if (verbose) printf("Renaming tag '%s' to '%s'...\n", old_name, new_name);
+
+  bool success = update_tag_check_conflict(db, old_name, new_name);
+  if (!success) {
+    if (!force)
+      ERROR_EXIT(
+          "Error: Tag '%s' already exists, cannot rename '%s' to '%s'. Use "
+          "--force option to overwrite the existing tag.\n",
+          new_name, old_name, new_name);
+
+    if (verbose)
+      printf(
+          "Tag '%s' already exists, merging tags '%s' into '%s' and removing "
+          "tag '%s'\n",
+          new_name, old_name, new_name, old_name);
+    long long old_tag_id = add_or_get_tag_id(db, old_name);
+    long long new_tag_id = add_or_get_tag_id(db, new_name);
+    merge_tags(db, old_tag_id, new_tag_id);
+  }
+
+  if (sqlite3_changes(db) == 0)
+    printf("Warning: Tag '%s' does not exist, nothing renamed\n", old_name);
+  else
+    printf("Renamed tag '%s' to '%s'\n", old_name, new_name);
+}
+
 struct print_file_ctx {
   const char *relative_to;
   const char *dir;

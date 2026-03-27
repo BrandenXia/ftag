@@ -35,6 +35,12 @@ void query_file_by_path(sqlite3 *db, const char *path, db_query_ctx_t ctx);
 
 long long add_or_get_tag_id(sqlite3 *db, const char *name);
 
+// Returns false on conflict
+bool update_tag_check_conflict(sqlite3 *db, const char *old_name,
+                               const char *new_name);
+
+void merge_tags(sqlite3 *db, long long src_tag_id, long long dst_tag_id);
+
 void add_file_tag(sqlite3 *db, long long file_id, long long tag_id);
 
 void remove_file_tag(sqlite3 *db, long long file_id, long long tag_id);

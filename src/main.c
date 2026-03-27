@@ -17,13 +17,14 @@
 global_opts_t global_opts;
 
 // clang-format off
-int cmd_init  (int, char *[]);
-int cmd_add   (int, char *[]);
-int cmd_rm    (int, char *[]);
-int cmd_copy  (int, char *[]);
-int cmd_show  (int, char *[]);
-int cmd_sync  (int, char *[]);
-int cmd_query (int, char *[], bool is_find_cmd);
+int cmd_init   (int, char *[]);
+int cmd_add    (int, char *[]);
+int cmd_rm     (int, char *[]);
+int cmd_copy   (int, char *[]);
+int cmd_rename (int, char *[]);
+int cmd_show   (int, char *[]);
+int cmd_sync   (int, char *[]);
+int cmd_query  (int, char *[], bool is_find_cmd);
 // clang-format on
 
 int main(int argc, char *argv[]) {
@@ -45,6 +46,8 @@ int main(int argc, char *argv[]) {
     cmd_func = cmd_rm;
   else if CMP ("copy")
     cmd_func = cmd_copy;
+  else if CMP ("rename")
+    cmd_func = cmd_rename;
   else if CMP ("show")
     cmd_func = cmd_show;
   else if CMP ("sync")
@@ -229,6 +232,19 @@ int cmd_copy(int argc, char *argv[]) {
   free(resolved_dst.relative_path);
   free(resolved_src.real_path);
   free(resolved_src.relative_path);
+  cleanup_resources(&r);
+
+  return 0;
+}
+
+int cmd_rename(int argc, char *argv[]) {
+  rename_opts_t opts = {0};
+  parse_rename_opts(&opts, argc, argv);
+  resources_t r;
+  setup_resources(&r, global_opts.verbose);
+
+  rename_tag(r.db, opts.old_tag, opts.new_tag, opts.force, global_opts.verbose);
+
   cleanup_resources(&r);
 
   return 0;

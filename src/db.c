@@ -59,9 +59,9 @@
 #define _SQL_STEP(stmt, cond)                                                  \
   do {                                                                         \
     int err = sqlite3_step(stmt);                                              \
-    if (err cond) ERROR_SQL_EXIT("Error executing SQL statement");             \
+    if (cond) ERROR_SQL_EXIT("Error executing SQL statement");                 \
   } while (0)
-#define _SQL_STEP_DEFAULT(stmt) _SQL_STEP(stmt, != SQLITE_DONE)
+#define _SQL_STEP_DEFAULT(stmt) _SQL_STEP(stmt, err != SQLITE_DONE)
 
 #define NTH_ARG(_1, _2, COND, ...) COND
 #define CHOOSE_SQL_STEP(...) NTH_ARG(__VA_ARGS__, _SQL_STEP, _SQL_STEP_DEFAULT)
@@ -148,7 +148,7 @@ long long add_or_update_file(sqlite3 *db, const char *path, bool is_dir,
   SQL_BIND_NUM(int64, stmt, 4, mtime, "mtime");
   SQL_BIND_BLOB(stmt, 5, hash, 32, "hash");
 
-  SQL_STEP(stmt, != SQLITE_ROW);
+  SQL_STEP(stmt, err != SQLITE_ROW);
   long long file_id = sqlite3_column_int64(stmt, 0);
   SQL_FINALIZE(stmt);
 
@@ -164,7 +164,7 @@ long long add_or_get_tag_id(sqlite3 *db, const char *name) {
   SQL_PREPARE(stmt, SQL_INSERT_TAG);
   SQL_BIND(text, stmt, 1, name, "tag name");
 
-  SQL_STEP(stmt, != SQLITE_ROW);
+  SQL_STEP(stmt, err != SQLITE_ROW);
   long long tag_id = sqlite3_column_int64(stmt, 0);
   SQL_FINALIZE(stmt);
 
@@ -255,8 +255,56 @@ void copy_file_tags(sqlite3 *db, long long src_file_id, long long dst_file_id) {
   SQL_PREPARE(stmt, SQL_COPY_FILE_TAGS);
   SQL_BIND_NUM(int64, stmt, 1, dst_file_id, "dst_file_id");
   SQL_BIND_NUM(int64, stmt, 2, src_file_id, "src_file_id");
+
   SQL_STEP(stmt);
   SQL_FINALIZE(stmt);
+}
+
+#define SQL_RENAME_TAG_CHECK_CONFLICT "UPDATE tags SET name = ? WHERE name = ?;"
+
+bool update_tag_check_conflict(sqlite3 *db, const char *old_name,
+                               const char *new_name) {
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, SQL_RENAME_TAG_CHECK_CONFLICT);
+  SQL_BIND(text, stmt, 1, new_name, "new tag name");
+  SQL_BIND(text, stmt, 2, old_name, "old tag name");
+
+  int step_err = sqlite3_step(stmt);
+  if (step_err == SQLITE_CONSTRAINT) {
+    // no need to check for error
+    sqlite3_finalize(stmt);
+    return false; // conflict
+  } else if (step_err != SQLITE_DONE) {
+    SQL_FINALIZE(stmt);
+    ERROR_SQL_EXIT("Error executing tag rename");
+  }
+
+  SQL_FINALIZE(stmt);
+  return true;
+}
+
+#define SQL_MERGE_TAGS_FILE_TAGS                                               \
+  "UPDATE OR IGNORE file_tags SET tag_id = ? WHERE tag_id = ?;"
+
+#define SQL_DELETE_SRC_TAG "DELETE FROM tags WHERE id = ?;"
+
+void merge_tags(sqlite3 *db, long long src_tag_id, long long dst_tag_id) {
+  SQL_EXEC("BEGIN TRANSACTION;");
+
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, SQL_MERGE_TAGS_FILE_TAGS);
+  SQL_BIND_NUM(int64, stmt, 1, dst_tag_id, "dst_tag_id");
+  SQL_BIND_NUM(int64, stmt, 2, src_tag_id, "src_tag_id");
+
+  SQL_STEP(stmt);
+  SQL_FINALIZE(stmt);
+
+  SQL_PREPARE(stmt, SQL_DELETE_SRC_TAG);
+  SQL_BIND_NUM(int64, stmt, 1, src_tag_id, "src_tag_id");
+  SQL_STEP(stmt);
+  SQL_FINALIZE(stmt);
+
+  SQL_EXEC("COMMIT;");
 }
 
 #define SQL_QUERY_FILES_TAGS_RELEVANCE                                         \

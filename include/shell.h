@@ -17,6 +17,7 @@ static const char *USAGE_STR_GLOBAL =
     "   add       Add tags to a file\n"
     "   rm        Remove tags from a file\n"
     "   copy      Copy tags from one file to another\n"
+    "   rename    Rename a tag\n"
     "   query     Query files by tags\n"
     "   find      Alias for 'query --dir .'\n"
     "   show      Show all tags of a file\n"
@@ -61,6 +62,14 @@ static const char *USAGE_STR_COPY =
     "Options:\n"
     "   -s, --strict    Treat file info mismatch as an error instead of "
     "warning\n"
+    "   -h, --help      Show this help message and exit\n";
+
+static const char *USAGE_STR_RENAME =
+    "Usage: ftag rename [options] <old_tag> <new_tag>\n"
+    "\n"
+    "Options:\n"
+    "   -f, --force     Force rename even if the new tag already exists\n"
+    "                   (Warning: Will merge the two tags if existing!)\n"
     "   -h, --help      Show this help message and exit\n";
 
 static const char *USAGE_STR_QUERY =
@@ -125,6 +134,12 @@ typedef struct {
 } copy_opts_t;
 
 typedef struct {
+  bool force;
+  const char *old_tag;
+  const char *new_tag;
+} rename_opts_t;
+
+typedef struct {
   char *dir;
   enum query_file_type {
     QUERY_TYPE_FILE,
@@ -158,6 +173,7 @@ void parse_init_opts   (init_opts_t   *, int, char *[]);
 void parse_add_opts    (add_opts_t    *, int, char *[]);
 void parse_rm_opts     (rm_opts_t     *, int, char *[]);
 void parse_copy_opts   (copy_opts_t   *, int, char *[]);
+void parse_rename_opts (rename_opts_t *, int, char *[]);
 void parse_query_opts  (query_opts_t  *, int, char *[]);
 void parse_show_opts   (show_opts_t   *, int, char *[]);
 void parse_sync_opts   (sync_opts_t   *, int, char *[]);

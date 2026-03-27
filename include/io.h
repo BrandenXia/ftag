@@ -30,6 +30,9 @@ void add_tags(sqlite3 *db, long long file_id, const char **tags,
 void remove_tags(sqlite3 *db, long long file_id, const char **tags,
                  size_t tags_count, bool force, bool verbose);
 
+void rename_tag(sqlite3 *db, const char *old_name, const char *new_name,
+                bool force, bool verbose);
+
 union relevance_or_regex {
   struct {
     size_t tags_count;
