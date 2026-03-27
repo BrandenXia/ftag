@@ -13,10 +13,10 @@ else
 	$(error Invalid MODE: $(MODE). Use DEBUG or RELEASE.)
 endif
 
-INCLUDE_DIRS := include external/stb/include external/BLAKE3/c
+INCLUDE_DIRS := include external/stb/include external/BLAKE3/c external/pcre2/build/interface
 INCLUDE_FLAGS := $(patsubst %,-I%, $(INCLUDE_DIRS))
-LIBS_FILES := external/BLAKE3/c/build/libblake3.a build/stb_ds.o
-LIB_FLAGS := -lsqlite3 -Lexternal/BLAKE3/c/build -lblake3 build/stb_ds.o
+LIBS_FILES := external/BLAKE3/c/build/libblake3.a external/pcre2/build/libpcre2-8.a build/stb_ds.o
+LIB_FLAGS := -lsqlite3 -Lexternal/BLAKE3/c/build -lblake3 -Lexternal/pcre2/build -lpcre2-8 build/stb_ds.o
 BUILD_DIR ?= build
 TARGET := $(BUILD_DIR)/ftag
 SRCS := $(wildcard src/*.c) $(wildcard src/**/*.c)
@@ -41,6 +41,10 @@ $(foreach dir,$(sort $(dir $(OBJS))),$(eval $(call define_mkdir_target,$(dir))))
 external/BLAKE3/c/build/libblake3.a:
 	cmake -S external/BLAKE3/c -B external/BLAKE3/c/build
 	cmake --build external/BLAKE3/c/build
+
+external/pcre2/build/libpcre2-8.a:
+	cmake -S external/pcre2 -B external/pcre2/build -DPCRE2_SUPPORT_JIT=ON
+	cmake --build external/pcre2/build
 
 build/stb_ds.o: $(DIRS)
 	$(CC) -c external/stb/impl/stb_ds.c -Iexternal/stb/include -o $@
