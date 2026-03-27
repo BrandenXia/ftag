@@ -47,7 +47,7 @@ external/pcre2/build/libpcre2-8.a:
 	cmake --build external/pcre2/build
 
 build/stb_ds.o: $(DIRS)
-	$(CC) -c external/stb/impl/stb_ds.c -Iexternal/stb/include -o $@
+	$(CC) -O3 -c external/stb/impl/stb_ds.c -Iexternal/stb/include -o $@
 
 $(BUILD_DIR)/%.o: src/%.c Makefile | $(DIRS)
 	$(CC) $(CFLAGS) -MMD -MP $(INCLUDE_FLAGS) -c $< -o $@
