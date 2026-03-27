@@ -255,8 +255,14 @@ int cmd_query(int argc, char *argv[], bool is_find_cmd) {
     free(dir_absolute);
   }
 
-  query_files(r.db, opts.tags, opts.tags_count, opts.match_mode, relative_cwd,
-              dir, opts.type, global_opts.verbose);
+  union relevance_or_regex u;
+  if (opts.match_mode == TAG_MATCH_RELEVANCE) {
+    u.relevance.tags_count = opts.relevance.tags_count;
+    u.relevance.tags = opts.relevance.tags;
+  } else
+    u.regex = opts.regex;
+  query_files(r.db, opts.match_mode, u, relative_cwd, dir, opts.type,
+              global_opts.verbose);
 
   free(relative_cwd);
   free(dir);

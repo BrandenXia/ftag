@@ -25,7 +25,9 @@ static void sqlite_regex_func(sqlite3_context *ctx, int argc,
   if (re == NULL) {
     int errornumber;
     PCRE2_SIZE erroroffset;
-    re = pcre2_compile(pattern, PCRE2_ZERO_TERMINATED, PCRE2_UTF | PCRE2_UCP,
+    re = pcre2_compile(pattern, PCRE2_ZERO_TERMINATED,
+                       PCRE2_ANCHORED | PCRE2_ENDANCHORED | PCRE2_UTF |
+                           PCRE2_UCP,
                        &errornumber, &erroroffset, NULL);
 
     if (re == NULL) {

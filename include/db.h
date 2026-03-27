@@ -43,15 +43,11 @@ void remove_all_tags(sqlite3 *db, long long file_id);
 
 void copy_file_tags(sqlite3 *db, long long src_file_id, long long dst_file_id);
 
-enum tag_match_mode {
-  TAG_MATCH_OR,
-  TAG_MATCH_AND,
-  TAG_MATCH_RELEVANCE,
-};
-
 // Returns the number of files found
-int query_files_by_tags(sqlite3 *db, const char **tags, size_t tags_count,
-                        enum tag_match_mode mode, db_query_ctx_t ctx);
+int query_file_tags_relevance(sqlite3 *db, const char **tags, size_t tags_count,
+                              db_query_ctx_t ctx);
+
+int query_file_tags_regex(sqlite3 *db, const char *regex, db_query_ctx_t ctx);
 
 // Returns the number of files found
 int query_tags_by_file(sqlite3 *db, long long file_id, db_query_ctx_t ctx);

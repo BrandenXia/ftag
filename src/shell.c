@@ -127,7 +127,7 @@ void parse_copy_opts(copy_opts_t *opts, int argc, char **argv) {
 static struct option query_long_opts[] = {
   {"dir", required_argument, NULL, 'd'},
   {"type", required_argument, NULL, 't'},
-  {"match", required_argument, NULL, 'm'},
+  {"mode", required_argument, NULL, 'm'},
   {"help", no_argument, NULL, 'h'},
   {NULL, 0, NULL, 0},
 };
@@ -151,12 +151,10 @@ void parse_query_opts(query_opts_t *opts, int argc, char **argv) {
         ERROR_USAGE_EXIT("Error processing args: Invalid type '%s'\n", optarg);
       break;
     case 'm':
-      if (strcmp(optarg, "and") == 0)
-        opts->match_mode = TAG_MATCH_AND;
-      else if (strcmp(optarg, "or") == 0)
-        opts->match_mode = TAG_MATCH_OR;
-      else if (strcmp(optarg, "relevance") == 0)
+      if (strcmp(optarg, "relevance") == 0)
         opts->match_mode = TAG_MATCH_RELEVANCE;
+      else if (strcmp(optarg, "regex") == 0)
+        opts->match_mode = TAG_MATCH_REGEX;
       else
         ERROR_USAGE_EXIT("Error processing args: Invalid match mode '%s'\n",
                          optarg);
@@ -165,11 +163,23 @@ void parse_query_opts(query_opts_t *opts, int argc, char **argv) {
     case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
     }
 
-  if (argc < optind + 1)
-    ERROR_USAGE_EXIT("Error processing args: Expect at least a tag\n");
+  switch (opts->match_mode) {
+  case TAG_MATCH_RELEVANCE:
+    if (argc < optind + 1)
+      ERROR_USAGE_EXIT("Error processing args: Expect at least a tag\n");
 
-  opts->tags_count = (size_t)(argc - optind);
-  opts->tags = (const char **)(argv + optind);
+    opts->relevance.tags_count = (size_t)(argc - optind);
+    opts->relevance.tags = (const char **)(argv + optind);
+    break;
+  case TAG_MATCH_REGEX:
+    if (argc < optind + 1)
+      ERROR_USAGE_EXIT("Error processing args: Expect a regex pattern\n");
+    if (argc > optind + 1)
+      ERROR_USAGE_EXIT("Error processing args: Expect only a regex pattern\n");
+
+    opts->regex = argv[optind];
+    break;
+  }
 }
 
 // --------------------------SHOW --------------------------

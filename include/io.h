@@ -6,7 +6,6 @@
 
 #include <sqlite3.h>
 
-#include "db.h"
 #include "resource.h"
 #include "shell.h"
 
@@ -31,9 +30,16 @@ void add_tags(sqlite3 *db, long long file_id, const char **tags,
 void remove_tags(sqlite3 *db, long long file_id, const char **tags,
                  size_t tags_count, bool force, bool verbose);
 
-void query_files(sqlite3 *db, const char **tags, size_t tags_count,
-                 enum tag_match_mode match_mode, const char *relative_to,
-                 const char *dir, enum query_type type, bool verbose);
+union relevance_or_regex {
+  struct {
+    size_t tags_count;
+    const char **tags;
+  } relevance;
+  const char *regex;
+};
+void query_files(sqlite3 *db, enum tag_match_mode match_mode,
+                 union relevance_or_regex u, const char *relative_to,
+                 const char *dir, enum query_file_type type, bool verbose);
 
 void show_tags(sqlite3 *db, long long file_id);
 

@@ -192,7 +192,7 @@ void remove_tags(sqlite3 *db, long long file_id, const char **tags,
 struct print_file_ctx {
   const char *relative_to;
   const char *dir;
-  enum query_type type;
+  enum query_file_type type;
   bool verbose;
 };
 
@@ -223,19 +223,28 @@ void print_file_path(sqlite3_stmt *stmt, void *user_data) {
   }
 }
 
-void query_files(sqlite3 *db, const char **tags, size_t tags_count,
-                 enum tag_match_mode match_mode, const char *relative_to,
-                 const char *dir, enum query_type type, bool verbose) {
+void query_files(sqlite3 *db, enum tag_match_mode match_mode,
+                 union relevance_or_regex u, const char *relative_to,
+                 const char *dir, enum query_file_type type, bool verbose) {
   struct print_file_ctx ctx = {
     .relative_to = relative_to,
     .dir = dir,
     .type = type,
     .verbose = verbose,
   };
+  db_query_ctx_t query_ctx = {.callback = print_file_path, .user_data = &ctx};
 
-  int found_count =
-      query_files_by_tags(db, tags, tags_count, match_mode,
-                          (db_query_ctx_t){print_file_path, &ctx});
+  int found_count;
+  switch (match_mode) {
+  case TAG_MATCH_RELEVANCE:
+    found_count = query_file_tags_relevance(db, u.relevance.tags,
+                                            u.relevance.tags_count, query_ctx);
+    break;
+  case TAG_MATCH_REGEX:
+    const char *regex = u.regex; // in regex mode, treats the first tag as regex
+    found_count = query_file_tags_regex(db, regex, query_ctx);
+    break;
+  }
 
   if (found_count == 0) printf("No files found matching the specified tags.\n");
 }

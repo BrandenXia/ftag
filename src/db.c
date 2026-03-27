@@ -259,32 +259,15 @@ void copy_file_tags(sqlite3 *db, long long src_file_id, long long dst_file_id) {
   SQL_FINALIZE(stmt);
 }
 
-#define SQL_QUERY_FILES_BY_TAGS_AND                                            \
-  "SELECT files.* FROM files JOIN file_tags ON files.id = file_tags.file_id "  \
-  "JOIN tags ON file_tags.tag_id = tags.id WHERE tags.name IN (%s) GROUP BY "  \
-  "files.id HAVING COUNT(tags.id) = %d;"
-
-#define SQL_QUERY_FILES_BY_TAGS_OR                                             \
-  "SELECT DISTINCT files.* FROM files JOIN file_tags ON files.id = "           \
-  "file_tags.file_id JOIN tags ON file_tags.tag_id = tags.id WHERE tags.name " \
-  "IN (%s);"
-
-#define SQL_QUERY_FILES_BY_TAGS_RELEVANCE                                      \
+#define SQL_QUERY_FILES_TAGS_RELEVANCE                                         \
   "SELECT files.*, COUNT(tags.id) as match_count FROM files JOIN file_tags "   \
   "ON files.id = file_tags.file_id JOIN tags ON file_tags.tag_id = tags.id "   \
   "WHERE tags.name IN (%s) GROUP BY files.id ORDER BY match_count DESC;"
 
-int query_files_by_tags(sqlite3 *db, const char **tags, size_t tags_count,
-                        enum tag_match_mode mode, db_query_ctx_t ctx) {
-  const char *template;
-  switch (mode) {
-  case TAG_MATCH_RELEVANCE: template = SQL_QUERY_FILES_BY_TAGS_RELEVANCE; break;
-  case TAG_MATCH_OR: template = SQL_QUERY_FILES_BY_TAGS_OR; break;
-  case TAG_MATCH_AND: template = SQL_QUERY_FILES_BY_TAGS_AND; break;
-  }
-
-  size_t placeholders_len = tags_count * 2;      // "?, ?, ..."
-  char *placeholders = malloc(placeholders_len); // "?, ?, ..."
+int query_file_tags_relevance(sqlite3 *db, const char **tags, size_t tags_count,
+                              db_query_ctx_t ctx) {
+  size_t placeholders_len = tags_count * 2; // "?, ?, ..."
+  char *placeholders = malloc(placeholders_len);
   placeholders[0] = '?';
   placeholders[placeholders_len - 1] = '\0';
   for (size_t i = 1; i < tags_count; i++) {
@@ -293,14 +276,34 @@ int query_files_by_tags(sqlite3 *db, const char **tags, size_t tags_count,
   }
 
   size_t query_len =
-      (size_t)snprintf(NULL, 0, template, placeholders, tags_count);
+      (size_t)snprintf(NULL, 0, SQL_QUERY_FILES_TAGS_RELEVANCE, placeholders);
   char *query = malloc(query_len + 1);
-  snprintf(query, query_len + 1, template, placeholders, tags_count);
+  snprintf(query, query_len + 1, SQL_QUERY_FILES_TAGS_RELEVANCE, placeholders);
 
   sqlite3_stmt *stmt;
   SQL_PREPARE(stmt, query);
   for (size_t i = 0; i < tags_count; i++)
     SQL_BIND(text, stmt, (int)i + 1, tags[i], "tag name");
+
+  int count = 0;
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
+    ctx.callback(stmt, ctx.user_data);
+    count++;
+  }
+
+  SQL_FINALIZE(stmt);
+
+  return count;
+}
+
+#define SQL_QUERY_FILES_TAGS_REGEX                                             \
+  "SELECT files.* FROM files JOIN file_tags ON files.id = file_tags.file_id "  \
+  "JOIN tags ON file_tags.tag_id = tags.id WHERE tags.name REGEXP ?;"
+
+int query_file_tags_regex(sqlite3 *db, const char *regex, db_query_ctx_t ctx) {
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, SQL_QUERY_FILES_TAGS_REGEX);
+  SQL_BIND(text, stmt, 1, regex, "regex");
 
   int count = 0;
   while (sqlite3_step(stmt) == SQLITE_ROW) {

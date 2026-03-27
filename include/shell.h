@@ -5,8 +5,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "db.h"
-
 static const char *USAGE_STR_GLOBAL =
     "Usage: ftag [options] <command> [args...]\n"
     "\n"
@@ -66,14 +64,14 @@ static const char *USAGE_STR_COPY =
     "   -h, --help      Show this help message and exit\n";
 
 static const char *USAGE_STR_QUERY =
-    "Usage: ftag query [options] tag1 [tag2 ...]\n"
+    "Usage: ftag query [options] (tag1 [tag2 ...] | [-m regex] REGEX)\n"
     "\n"
     "Options:\n"
     "   -d, --dir DIR     Only search for files under the specified directory "
     "(default: none)\n"
     "   -t, --type        Only search for file or directories (file|dir, "
     "default: both)\n"
-    "   -m, --match MODE  Matching mode (and|or|relevance, default: "
+    "   -m, --mode MODE   Matching mode (relevance|regex), default: "
     "relevance)\n"
     "   -h, --help        Show this help message and exit\n";
 
@@ -128,10 +126,19 @@ typedef struct {
 
 typedef struct {
   char *dir;
-  enum query_type { QUERY_TYPE_FILE, QUERY_TYPE_DIR, QUERY_TYPE_BOTH } type;
-  enum tag_match_mode match_mode;
-  size_t tags_count;
-  const char **tags;
+  enum query_file_type {
+    QUERY_TYPE_FILE,
+    QUERY_TYPE_DIR,
+    QUERY_TYPE_BOTH
+  } type;
+  enum tag_match_mode { TAG_MATCH_RELEVANCE, TAG_MATCH_REGEX } match_mode;
+  union {
+    struct {
+      size_t tags_count;
+      const char **tags;
+    } relevance;
+    const char *regex;
+  };
 } query_opts_t;
 
 typedef struct {
