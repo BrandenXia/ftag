@@ -51,6 +51,8 @@ static void sqlite_regex_func(sqlite3_context *ctx, int argc,
     sqlite3_result_int(ctx, 1);
   else if (rc == PCRE2_ERROR_NOMATCH)
     sqlite3_result_int(ctx, 0);
+  else if (rc == PCRE2_ERROR_MATCHLIMIT)
+    sqlite3_result_error(ctx, "Regex is too complex (hit backtrack limit)", -1);
   else
     sqlite3_result_error(ctx, "Regex execution error", -1);
 }
