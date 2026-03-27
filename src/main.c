@@ -31,7 +31,8 @@ int main(int argc, char *argv[]) {
   parse_global_opts(&global_opts, argc, argv);
 
   if (optind >= argc)
-    ERROR_USAGE_EXIT("Error processing args: Expect a subcommand\n", stderr);
+    ERROR_USAGE_EXIT(USAGE_STR_GLOBAL,
+                     "Error processing args: Expect a subcommand\n");
 
   char *subcmd = argv[optind];
   int (*cmd_func)(int, char *[]);
@@ -59,7 +60,8 @@ int main(int argc, char *argv[]) {
   }
 #undef CMP
   else
-    ERROR_USAGE_EXIT("Error processing args: Unknown subcommand '%s'\n",
+    ERROR_USAGE_EXIT(USAGE_STR_GLOBAL,
+                     "Error processing args: Unknown subcommand '%s'\n",
                      subcmd);
 
   int shift = optind;

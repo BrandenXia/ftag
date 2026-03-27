@@ -21,7 +21,7 @@ void parse_global_opts(global_opts_t *opts, int argc, char **argv) {
     switch (opt) {
     case 'v': opts->verbose = true; break;
     case 'h': fputs(USAGE_STR_GLOBAL, stdout); exit(EXIT_SUCCESS);
-    case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
+    case '?': ERROR_USAGE_EXIT(USAGE_STR_GLOBAL, UNKOWN_OPT_MSG, optopt);
     }
 }
 
@@ -37,13 +37,17 @@ void parse_init_opts(init_opts_t *opts, int argc, char **argv) {
     switch (opt) {
     case 'h': fputs(USAGE_STR_INIT, stdout); exit(EXIT_SUCCESS);
     case 'f': opts->force = true; break;
-    case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
+    case '?': ERROR_USAGE_EXIT(USAGE_STR_INIT, UNKOWN_OPT_MSG, optopt);
     }
 
   if (optind < argc)
     opts->dir = argv[optind];
   else
     opts->dir = ".";
+
+  if (argc > optind + 1)
+    ERROR_USAGE_EXIT(USAGE_STR_INIT,
+                     "Error processing args: Expect at most a directory\n");
 }
 
 // --------------------------ADD --------------------------
@@ -58,11 +62,12 @@ void parse_add_opts(add_opts_t *opts, int argc, char **argv) {
     switch (opt) {
     case 's': opts->strict = true; break;
     case 'h': fputs(USAGE_STR_ADD, stdout); exit(EXIT_SUCCESS);
-    case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
+    case '?': ERROR_USAGE_EXIT(USAGE_STR_ADD, UNKOWN_OPT_MSG, optopt);
     }
 
   if (argc < optind + 2)
     ERROR_USAGE_EXIT(
+        USAGE_STR_ADD,
         "Error processing args: Expect at least a file and a tag\n");
   opts->file = argv[optind];
   opts->tags_count = (size_t)(argc - optind - 1);
@@ -85,14 +90,16 @@ void parse_rm_opts(rm_opts_t *opts, int argc, char **argv) {
     case 'f': opts->force = true; break;
     case 's': opts->strict = true; break;
     case 'h': fputs(USAGE_STR_RM, stdout); exit(EXIT_SUCCESS);
-    case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
+    case '?': ERROR_USAGE_EXIT(USAGE_STR_RM, UNKOWN_OPT_MSG, optopt);
     }
 
   if (opts->all) {
     if (argc < optind + 1)
-      ERROR_USAGE_EXIT("Error processing args: Expect at least a file\n");
+      ERROR_USAGE_EXIT(USAGE_STR_RM,
+                       "Error processing args: Expect at least a file\n");
   } else if (argc < optind + 2)
     ERROR_USAGE_EXIT(
+        USAGE_STR_RM,
         "Error processing args: Expect at least a file and a tag\n");
 
   opts->file = argv[optind];
@@ -112,12 +119,17 @@ void parse_copy_opts(copy_opts_t *opts, int argc, char **argv) {
     switch (opt) {
     case 's': opts->strict = true; break;
     case 'h': fputs(USAGE_STR_COPY, stdout); exit(EXIT_SUCCESS);
-    case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
+    case '?': ERROR_USAGE_EXIT(USAGE_STR_COPY, UNKOWN_OPT_MSG, optopt);
     }
 
   if (argc < optind + 2)
     ERROR_USAGE_EXIT(
+        USAGE_STR_COPY,
         "Error processing args: Expect at least a source and a destination\n");
+  if (argc > optind + 2)
+    ERROR_USAGE_EXIT(
+        USAGE_STR_COPY,
+        "Error processing args: Expect at most a source and a destination\n");
 
   opts->src = argv[optind];
   opts->dst = argv[optind + 1];
@@ -148,7 +160,8 @@ void parse_query_opts(query_opts_t *opts, int argc, char **argv) {
       else if (strcmp(optarg, "both") == 0)
         opts->type = QUERY_TYPE_BOTH;
       else
-        ERROR_USAGE_EXIT("Error processing args: Invalid type '%s'\n", optarg);
+        ERROR_USAGE_EXIT(USAGE_STR_QUERY,
+                         "Error processing args: Invalid type '%s'\n", optarg);
       break;
     case 'm':
       if (strcmp(optarg, "relevance") == 0)
@@ -156,26 +169,30 @@ void parse_query_opts(query_opts_t *opts, int argc, char **argv) {
       else if (strcmp(optarg, "regex") == 0)
         opts->match_mode = TAG_MATCH_REGEX;
       else
-        ERROR_USAGE_EXIT("Error processing args: Invalid match mode '%s'\n",
+        ERROR_USAGE_EXIT(USAGE_STR_QUERY,
+                         "Error processing args: Invalid match mode '%s'\n",
                          optarg);
       break;
     case 'h': fputs(USAGE_STR_QUERY, stdout); exit(EXIT_SUCCESS);
-    case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
+    case '?': ERROR_USAGE_EXIT(USAGE_STR_QUERY, UNKOWN_OPT_MSG, optopt);
     }
 
   switch (opts->match_mode) {
   case TAG_MATCH_RELEVANCE:
     if (argc < optind + 1)
-      ERROR_USAGE_EXIT("Error processing args: Expect at least a tag\n");
+      ERROR_USAGE_EXIT(USAGE_STR_QUERY,
+                       "Error processing args: Expect at least a tag\n");
 
     opts->relevance.tags_count = (size_t)(argc - optind);
     opts->relevance.tags = (const char **)(argv + optind);
     break;
   case TAG_MATCH_REGEX:
     if (argc < optind + 1)
-      ERROR_USAGE_EXIT("Error processing args: Expect a regex pattern\n");
+      ERROR_USAGE_EXIT(USAGE_STR_QUERY,
+                       "Error processing args: Expect a regex pattern\n");
     if (argc > optind + 1)
-      ERROR_USAGE_EXIT("Error processing args: Expect only a regex pattern\n");
+      ERROR_USAGE_EXIT(USAGE_STR_QUERY,
+                       "Error processing args: Expect only a regex pattern\n");
 
     opts->regex = argv[optind];
     break;
@@ -194,11 +211,16 @@ void parse_show_opts(show_opts_t *opts, int argc, char **argv) {
     switch (opt) {
     case 's': opts->strict = true; break;
     case 'h': fputs(USAGE_STR_SHOW, stdout); exit(EXIT_SUCCESS);
-    case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
+    case '?': ERROR_USAGE_EXIT(USAGE_STR_SHOW, UNKOWN_OPT_MSG, optopt);
     }
 
   if (argc < optind + 1)
-    ERROR_USAGE_EXIT("Error processing args: Expect a file or directory\n");
+    ERROR_USAGE_EXIT(USAGE_STR_SHOW,
+                     "Error processing args: Expect a file or directory\n");
+  if (argc > optind + 1)
+    ERROR_USAGE_EXIT(
+        USAGE_STR_SHOW,
+        "Error processing args: Expect at most a file or directory\n");
 
   opts->file = argv[optind];
 }
@@ -219,6 +241,10 @@ void parse_sync_opts(sync_opts_t *opts, int argc, char **argv) {
     case 'D': opts->deep = true; break;
     case 'y': opts->yes = true; break;
     case 'h': fputs(USAGE_STR_SYNC, stdout); exit(EXIT_SUCCESS);
-    case '?': ERROR_USAGE_EXIT(UNKOWN_OPT_MSG, optopt);
+    case '?': ERROR_USAGE_EXIT(USAGE_STR_SYNC, UNKOWN_OPT_MSG, optopt);
     }
+
+  if (argc > optind)
+    ERROR_USAGE_EXIT(USAGE_STR_SYNC,
+                     "Error processing args: Expect no positional arguments\n");
 }
