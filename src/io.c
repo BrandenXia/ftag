@@ -289,6 +289,37 @@ void show_tags(sqlite3 *db, long long file_id) {
   if (found_count == 0) printf("No tags found for the specified file.\n");
 }
 
+struct show_stats_top_tag_ctx {
+  int *index;
+  int total_tagged_files;
+};
+
+void show_stats_top_tag_cb(sqlite3_stmt *stmt, void *user_data) {
+  struct show_stats_top_tag_ctx *ctx = user_data;
+  const char *tag = (const char *)sqlite3_column_text(stmt, 0);
+  int file_count = sqlite3_column_int(stmt, 1);
+  printf("%d. %s (%d files, %.1f%% of tagged files)\n", *ctx->index, tag,
+         file_count, (double)file_count / ctx->total_tagged_files * 100);
+  (*ctx->index)++;
+}
+
+void show_stats(sqlite3 *db, size_t top_tags_limit) {
+  int tag_count = count_tags(db);
+  int file_count = count_files(db);
+  int file_tag_count = count_file_tags(db);
+
+  printf(
+      "%d existing tags, %d tagged files, %d tag-file associations on record\n",
+      tag_count, file_count, file_tag_count);
+
+  printf("Top %zu tags:\n", top_tags_limit);
+  int index = 1;
+  struct show_stats_top_tag_ctx ctx = {
+    .index = &index, .total_tagged_files = file_count};
+  query_top_tags(db, top_tags_limit,
+                 (db_query_ctx_t){show_stats_top_tag_cb, &ctx});
+}
+
 struct missing_file_entry {
   long long id;
   char *path;

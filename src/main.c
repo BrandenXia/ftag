@@ -23,6 +23,7 @@ int cmd_rm      (int, char *[]);
 int cmd_copy    (int, char *[]);
 int cmd_rename  (int, char *[]);
 int cmd_show    (int, char *[]);
+int cmd_stat    (int, char *[]);
 int cmd_sync    (int, char *[]);
 int cmd_cleanup (int, char *[]);
 int cmd_query   (int, char *[], bool is_find_cmd);
@@ -51,6 +52,8 @@ int main(int argc, char *argv[]) {
     cmd_func = cmd_rename;
   else if CMP ("show")
     cmd_func = cmd_show;
+  else if CMP ("stat")
+    cmd_func = cmd_stat;
   else if CMP ("sync")
     cmd_func = cmd_sync;
   else if CMP ("cleanup")
@@ -308,6 +311,19 @@ int cmd_show(int argc, char *argv[]) {
 
   free(resolved.relative_path);
   free(resolved.real_path);
+  cleanup_resources(&r);
+
+  return 0;
+}
+
+int cmd_stat(int argc, char *argv[]) {
+  stat_opts_t opts = {};
+  parse_stat_opts(&opts, argc, argv);
+  resources_t r;
+  setup_resources(&r, global_opts.verbose);
+
+  show_stats(r.db, opts.top_tags_limit);
+
   cleanup_resources(&r);
 
   return 0;

@@ -58,6 +58,14 @@ int query_file_tags_regex(sqlite3 *db, const char *regex, db_query_ctx_t ctx);
 // Returns the number of files found
 int query_tags_by_file(sqlite3 *db, long long file_id, db_query_ctx_t ctx);
 
+int count_tags(sqlite3 *db);
+
+int count_files(sqlite3 *db);
+
+int count_file_tags(sqlite3 *db);
+
+void query_top_tags(sqlite3 *db, size_t limit, db_query_ctx_t ctx);
+
 void iter_files(sqlite3 *db, db_query_ctx_t ctx);
 
 void cleanup_tags(sqlite3 *db);

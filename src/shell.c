@@ -253,6 +253,37 @@ void parse_show_opts(show_opts_t *opts, int argc, char **argv) {
   opts->file = argv[optind];
 }
 
+// --------------------------STAT --------------------------
+static struct option stat_long_opts[] = {
+  {"top-tags-limit", required_argument, NULL, 't'},
+  {"help", no_argument, NULL, 'h'},
+  {NULL, 0, NULL, 0},
+};
+void parse_stat_opts(stat_opts_t *opts, int argc, char **argv) {
+  int opt;
+  opts->top_tags_limit = 5;
+
+  while ((opt = getopt_long(argc, argv, "th", stat_long_opts, NULL)) != -1)
+    switch (opt) {
+    case 't': {
+      char *endptr;
+      long limit = strtol(optarg, &endptr, 10);
+      if (*endptr != '\0' || limit <= 0)
+        ERROR_USAGE_EXIT(USAGE_STR_STAT,
+                         "Error processing args: Invalid top-tags-limit '%s'\n",
+                         optarg);
+      opts->top_tags_limit = (size_t)limit;
+      break;
+    }
+    case 'h': fputs(USAGE_STR_STAT, stdout); exit(EXIT_SUCCESS);
+    case '?': ERROR_USAGE_EXIT(USAGE_STR_STAT, UNKOWN_OPT_MSG, optopt);
+    }
+
+  if (argc > optind)
+    ERROR_USAGE_EXIT(USAGE_STR_STAT,
+                     "Error processing args: Expect no positional arguments\n");
+}
+
 // --------------------------SYNC --------------------------
 static struct option sync_long_opts[] = {
   {"dry-run", no_argument, NULL, 'd'},

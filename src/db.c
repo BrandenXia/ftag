@@ -384,6 +384,55 @@ int query_tags_by_file(sqlite3 *db, long long file_id, db_query_ctx_t ctx) {
   return count;
 }
 
+#define SQL_COUNT_TAGS "SELECT COUNT(*) FROM tags;"
+
+int count_tags(sqlite3 *db) {
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, SQL_COUNT_TAGS);
+  SQL_STEP(stmt, err != SQLITE_ROW);
+  int count = (int)sqlite3_column_int64(stmt, 0);
+  SQL_FINALIZE(stmt);
+  return count;
+}
+
+#define SQL_COUNT_FILES "SELECT COUNT(*) FROM files;"
+
+int count_files(sqlite3 *db) {
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, SQL_COUNT_FILES);
+  SQL_STEP(stmt, err != SQLITE_ROW);
+  int count = (int)sqlite3_column_int64(stmt, 0);
+  SQL_FINALIZE(stmt);
+  return count;
+}
+
+#define SQL_COUNT_FILE_TAGS "SELECT COUNT(*) FROM file_tags;"
+
+int count_file_tags(sqlite3 *db) {
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, SQL_COUNT_FILE_TAGS);
+  SQL_STEP(stmt, err != SQLITE_ROW);
+  int count = (int)sqlite3_column_int64(stmt, 0);
+  SQL_FINALIZE(stmt);
+  return count;
+}
+
+#define SQL_QUERY_TOP_TAGS                                                     \
+  "SELECT tags.name, COUNT(file_tags.file_id) as file_count FROM tags LEFT "   \
+  "JOIN file_tags ON tags.id = file_tags.tag_id GROUP BY tags.id ORDER BY "    \
+  "file_count DESC LIMIT ?;"
+
+void query_top_tags(sqlite3 *db, size_t limit, db_query_ctx_t ctx) {
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, SQL_QUERY_TOP_TAGS);
+  SQL_BIND_NUM(int64, stmt, 1, (long long)limit, "limit");
+
+  while (sqlite3_step(stmt) == SQLITE_ROW)
+    ctx.callback(stmt, ctx.user_data);
+
+  SQL_FINALIZE(stmt);
+}
+
 void iter_files(sqlite3 *db, db_query_ctx_t ctx) {
   sqlite3_stmt *stmt;
   SQL_PREPARE(stmt, "SELECT * FROM files;");

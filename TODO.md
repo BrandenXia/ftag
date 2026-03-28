@@ -4,4 +4,4 @@
 - [x] copy tags from source to destination
 - [x] better query (logic combination, reverse, SQL `LIKE`)
 - [x] cleanup orphan files / tags
-- [ ] show all tags, all files, stats of tags
+- [x] show all tags, all files, stats of tags
