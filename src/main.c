@@ -17,14 +17,15 @@
 global_opts_t global_opts;
 
 // clang-format off
-int cmd_init   (int, char *[]);
-int cmd_add    (int, char *[]);
-int cmd_rm     (int, char *[]);
-int cmd_copy   (int, char *[]);
-int cmd_rename (int, char *[]);
-int cmd_show   (int, char *[]);
-int cmd_sync   (int, char *[]);
-int cmd_query  (int, char *[], bool is_find_cmd);
+int cmd_init    (int, char *[]);
+int cmd_add     (int, char *[]);
+int cmd_rm      (int, char *[]);
+int cmd_copy    (int, char *[]);
+int cmd_rename  (int, char *[]);
+int cmd_show    (int, char *[]);
+int cmd_sync    (int, char *[]);
+int cmd_cleanup (int, char *[]);
+int cmd_query   (int, char *[], bool is_find_cmd);
 // clang-format on
 
 int main(int argc, char *argv[]) {
@@ -52,6 +53,8 @@ int main(int argc, char *argv[]) {
     cmd_func = cmd_show;
   else if CMP ("sync")
     cmd_func = cmd_sync;
+  else if CMP ("cleanup")
+    cmd_func = cmd_cleanup;
   else if CMP ("query") {
     int shift = optind;
     optind = 1; // Reset optind for subcommand parsing
@@ -319,6 +322,27 @@ int cmd_sync(int argc, char *argv[]) {
 
   sync_tags(r.db, r.data_root, opts.dry_run, opts.deep, opts.yes,
             global_opts.verbose);
+
+  cleanup_resources(&r);
+
+  return 0;
+}
+
+int cmd_cleanup(int argc, char *argv[]) {
+  cleanup_opts_t opts = {};
+  parse_cleanup_opts(&opts, argc, argv);
+
+  resources_t r;
+  setup_resources(&r, global_opts.verbose);
+
+  int update_count;
+  cleanup_tags(r.db);
+  update_count = sqlite3_changes(r.db);
+  printf("Removed %d orphaned tags\n", update_count);
+  cleanup_files(r.db);
+  update_count = sqlite3_changes(r.db);
+  printf("Removed %d orphaned files\n", update_count);
+  vacuum_db(r.db);
 
   cleanup_resources(&r);
 

@@ -393,3 +393,18 @@ void iter_files(sqlite3 *db, db_query_ctx_t ctx) {
 
   SQL_FINALIZE(stmt);
 }
+
+#define SQL_DELETE_ORPHAN_TAGS                                                 \
+  "DELETE FROM tags WHERE id NOT IN (SELECT DISTINCT tag_id FROM file_tags);"
+
+void cleanup_tags(sqlite3 *db) { SQL_EXEC(SQL_DELETE_ORPHAN_TAGS); }
+
+#define SQL_DELETE_ORPHAN_FILES                                                \
+  "DELETE FROM files WHERE id NOT IN (SELECT DISTINCT file_id FROM "           \
+  "file_tags);"
+
+void cleanup_files(sqlite3 *db) { SQL_EXEC(SQL_DELETE_ORPHAN_FILES); }
+
+#define SQL_VACUUM "VACUUM;"
+
+void vacuum_db(sqlite3 *db) { SQL_EXEC(SQL_VACUUM); }

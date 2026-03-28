@@ -276,3 +276,21 @@ void parse_sync_opts(sync_opts_t *opts, int argc, char **argv) {
     ERROR_USAGE_EXIT(USAGE_STR_SYNC,
                      "Error processing args: Expect no positional arguments\n");
 }
+
+// -------------------------CLEANUP ------------------------
+static struct option cleanup_long_opts[] = {
+  {"help", no_argument, NULL, 'h'},
+  {NULL, 0, NULL, 0},
+};
+void parse_cleanup_opts(cleanup_opts_t *, int argc, char **argv) {
+  int opt;
+  while ((opt = getopt_long(argc, argv, "h", cleanup_long_opts, NULL)) != -1)
+    switch (opt) {
+    case 'h': fputs(USAGE_STR_CLEANUP, stdout); exit(EXIT_SUCCESS);
+    case '?': ERROR_USAGE_EXIT(USAGE_STR_CLEANUP, UNKOWN_OPT_MSG, optopt);
+    }
+
+  if (argc > optind)
+    ERROR_USAGE_EXIT(USAGE_STR_CLEANUP,
+                     "Error processing args: Expect no positional arguments\n");
+}

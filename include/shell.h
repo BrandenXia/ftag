@@ -22,6 +22,7 @@ static const char *USAGE_STR_GLOBAL =
     "   find      Alias for 'query --dir .'\n"
     "   show      Show all tags of a file\n"
     "   sync      Sync the tag database with the filesystem\n"
+    "   cleanup   Cleanup orphaned tags and files from the database\n"
     "\n"
     "To get help for a specific command, run 'ftag <command> --help'\n";
 
@@ -102,6 +103,12 @@ static const char *USAGE_STR_SYNC =
     "   -y, --yes       Automatically confirm all prompts\n"
     "   -h, --help      Show this help message and exit\n";
 
+static const char *USAGE_STR_CLEANUP =
+    "Usage: ftag cleanup [options]\n"
+    "\n"
+    "Options:\n"
+    "   -h, --help      Show this help message and exit\n";
+
 typedef struct {
   bool verbose;
 } global_opts_t;
@@ -167,16 +174,21 @@ typedef struct {
   bool yes;
 } sync_opts_t;
 
+typedef struct {
+  char not_used; // placeholder since empty struct is not allowed
+} cleanup_opts_t;
+
 // clang-format off
-void parse_global_opts (global_opts_t *, int, char *[]);
-void parse_init_opts   (init_opts_t   *, int, char *[]);
-void parse_add_opts    (add_opts_t    *, int, char *[]);
-void parse_rm_opts     (rm_opts_t     *, int, char *[]);
-void parse_copy_opts   (copy_opts_t   *, int, char *[]);
-void parse_rename_opts (rename_opts_t *, int, char *[]);
-void parse_query_opts  (query_opts_t  *, int, char *[]);
-void parse_show_opts   (show_opts_t   *, int, char *[]);
-void parse_sync_opts   (sync_opts_t   *, int, char *[]);
+void parse_global_opts  (global_opts_t  *, int, char *[]);
+void parse_init_opts    (init_opts_t    *, int, char *[]);
+void parse_add_opts     (add_opts_t     *, int, char *[]);
+void parse_rm_opts      (rm_opts_t      *, int, char *[]);
+void parse_copy_opts    (copy_opts_t    *, int, char *[]);
+void parse_rename_opts  (rename_opts_t  *, int, char *[]);
+void parse_query_opts   (query_opts_t   *, int, char *[]);
+void parse_show_opts    (show_opts_t    *, int, char *[]);
+void parse_sync_opts    (sync_opts_t    *, int, char *[]);
+void parse_cleanup_opts (cleanup_opts_t *, int, char *[]);
 // clang-format on
 
 #endif

@@ -60,4 +60,10 @@ int query_tags_by_file(sqlite3 *db, long long file_id, db_query_ctx_t ctx);
 
 void iter_files(sqlite3 *db, db_query_ctx_t ctx);
 
+void cleanup_tags(sqlite3 *db);
+
+void cleanup_files(sqlite3 *db);
+
+void vacuum_db(sqlite3 *db);
+
 #endif
