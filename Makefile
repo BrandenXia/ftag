@@ -35,7 +35,7 @@ SRCS := $(wildcard src/*.c) $(wildcard src/**/*.c)
 OBJS := $(patsubst src/%.c, $(BUILD_DIR)/%.o, $(SRCS))
 DEPS := $(patsubst src/%.c, $(BUILD_DIR)/%.d, $(SRCS))
 
-.PHONY: all install uninstall clean-build clean-exe clean-compile-commands clean FORCE
+.PHONY: all install uninstall clean-build clean-exe clean-compile-commands clean
 .PRECIOUS: $(BUILD_DIR) $(BUILD_DIR)/%
 
 all: $(TARGET)
@@ -50,11 +50,11 @@ $(foreach dir,$(sort $(dir $(OBJS))),$(eval $(call define_mkdir_target,$(dir))))
 
 -include $(DEPS)
 
-external/BLAKE3/c/build/libblake3.a: FORCE
+external/BLAKE3/c/build/libblake3.a:
 	cmake -S external/BLAKE3/c -B external/BLAKE3/c/build
 	cmake --build external/BLAKE3/c/build --parallel
 
-external/pcre2/build/libpcre2-8.a: FORCE
+external/pcre2/build/libpcre2-8.a:
 	cmake -S external/pcre2 -B external/pcre2/build -DPCRE2_SUPPORT_JIT=ON
 	cmake --build external/pcre2/build --parallel
 

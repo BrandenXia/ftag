@@ -3,11 +3,13 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fts.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "stb/stb_ds.h"
 
@@ -84,13 +86,14 @@ void check_file_info(sqlite3_stmt *stmt, void *user_data) {
     if (ctx->strict) {
       fprintf(stderr,
               "Error: file '%s' already exists in the database with different "
-              "info (is_dir=%d, size=%lld, mtime=%lld)\n",
+              "info (is_dir=%d, size=%" PRId64 ", mtime=%" PRId64 ")\n",
               path, is_dir, size, mtime);
       exit(EXIT_FAILURE);
     }
 
     printf("Warning: file '%s' already exists in the database with different "
-           "info (is_dir=%d, size=%lld, mtime=%lld), updating info\n",
+           "info (is_dir=%d, size=%" PRId64 ", mtime=%" PRId64
+           "), updating info\n",
            path, is_dir, size, mtime);
     printf("You can use '--strict' option to prevent this and treat it as an "
            "error instead\n");
@@ -138,8 +141,9 @@ long long add_or_get_file(sqlite3 *db, const char *real_path,
   }
 
   if (verbose) {
-    printf("Inserting file into database with info: is_dir=%d, size=%lld, "
-           "mtime=%lld\n",
+    printf("Inserting file into database with info: is_dir=%d, size=%" PRId64
+           ", "
+           "mtime=%" PRId64 "\n",
            info.is_dir, info.size, info.mtime);
     printf("File hash: ");
     print_hash(hash);
@@ -415,12 +419,14 @@ void sync_tags_iter_cb(sqlite3_stmt *stmt, void *user_data) {
   }
 
   printf("File '%s' already exists in the database with different "
-         "info (is_dir=%d, size=%lld, mtime=%lld), updating info\n",
+         "info (is_dir=%d, size=%" PRId64 ", mtime=%" PRId64
+         "), updating info\n",
          path, is_dir, size, mtime);
 
   if (ctx->verbose) {
-    printf("Updating file '%s' info in database to: is_dir=%d, size=%lld, "
-           "mtime=%lld\n",
+    printf("Updating file '%s' info in database to: is_dir=%d, size=%" PRId64
+           ", "
+           "mtime=%" PRId64 "\n",
            path, info.is_dir, info.size, info.mtime);
     printf("File hash: ");
     print_hash(hash);
@@ -627,7 +633,7 @@ void sync_tags(sqlite3 *db, const char *data_root, bool dry_run, bool deep,
     } else {
       // unable to resolve missing file, ask user
       printf("Unable to automatically resolve missing file '%s', which has "
-             "size %lld and mtime %lld\n",
+             "size %" PRId64 " and mtime %" PRId64 "\n",
              missing_file.path, missing_file.size, missing_file.mtime);
 
       int idx = 1;
