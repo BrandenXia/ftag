@@ -7,7 +7,7 @@ ZSH_COMPLETIONS_DIR ?= $(PREFIX)/share/zsh/site-functions
 
 INSTALL = install
 INSTALL_PROGRAM = $(INSTALL)
-INSSTALL_DATA = $(INSTALL) -m644
+INSTALL_DATA = $(INSTALL) -m644
 
 CFLAGS := -Wall -Wextra -Wpedantic -Werror -Wshadow -Wconversion -Wsign-conversion -Wimplicit-fallthrough -std=c23
 CFLAGS_DEBUG := -g -O0
@@ -69,7 +69,7 @@ compile_commands.json: clean
 install: $(TARGET)
 	$(INSTALL) -d $(DESTDIR)$(BIN_DIR) $(DESTDIR)$(ZSH_COMPLETIONS_DIR)
 	$(INSTALL_PROGRAM) $(TARGET) $(DESTDIR)$(BIN_DIR)/ftag
-	$(INSSTALL_DATA) completions/_ftag $(DESTDIR)$(ZSH_COMPLETIONS_DIR)/_ftag
+	$(INSTALL_DATA) completions/_ftag $(DESTDIR)$(ZSH_COMPLETIONS_DIR)/_ftag
 
 uninstall:
 	rm -f $(DESTDIR)$(BIN_DIR)/ftag $(DESTDIR)$(ZSH_COMPLETIONS_DIR)/_ftag
