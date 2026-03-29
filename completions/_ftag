@@ -1,0 +1,254 @@
+#compdef ftag
+
+_ftag_exe=""
+
+_ftag() {
+  local context state state_descr line
+  local -A opt_args
+  local -a commands
+
+  _ftag_exe="$words[1]"
+
+  commands=(
+    "init:Initalize a new tag database under the current directory"
+    "add:Add tags to a file"
+    "rm:Remove tags from a file"
+    "copy:Copy tags from one file to another"
+    "rename:Rename a tag"
+    "query:Query files by tags"
+    "find:Alias for 'query --dir .'"
+    "show:Show all tags of a file"
+    "list:List files or tags in the database"
+    "stat:Show statistics about the tag database"
+    "sync:Sync the tag database with the filesystem"
+    "cleanup:Cleanup orphaned tags and files from the database"
+  )
+
+  _arguments -C \
+    '--help[Show help message]' \
+    '--verbose[Enable verbose output]' \
+    '1: :->command' \
+    '*:: :->args'
+
+  case $state in
+    command)
+      _describe "command" commands
+      ;;
+    args)
+      case $line[1] in
+        init)       _ftag_init    ;;
+        add)        _ftag_add     ;;
+        rm)         _ftag_rm      ;;
+        copy)       _ftag_copy    ;;
+        rename)     _ftag_rename  ;;
+        query|find) _ftag_query   ;;
+        show)       _ftag_show    ;;
+        list)       _ftag_list    ;;
+        stat)       _ftag_stat    ;;
+        sync)       _ftag_sync    ;;
+        cleanup)    _ftag_cleanup ;;
+      esac
+      ;;
+  esac
+}
+
+local -a _ftag_tags_cache
+_ftag_tags() {
+  if (( ${#_ftag_tags_cache[@]} == 0 )); then
+    _ftag_tags_cache=("${(@f)$($_ftag_exe list tags 2>/dev/null)}")
+  fi
+  reply=("${_ftag_tags_cache[@]}")
+}
+
+local -a _ftag_files_cache
+_ftag_files() {
+  if (( ${#_ftag_files_cache[@]} == 0 )); then
+    _ftag_files_cache=("${(@f)$($_ftag_exe list files 2>/dev/null)}")
+  fi
+  reply=("${_ftag_files_cache[@]}")
+}
+
+_ftag_init() {
+  local context state state_descr line
+  local -A opt_args
+
+  _arguments \
+    '(-f --force)'{-f,--force}'[Force initialization even if a database already exists]' \
+    '(-h --help)'{-h,--help}'[Show help message]' \
+    "1:directory:_directories"
+}
+
+_ftag_add() {
+  local context state state_descr line
+  local -A opt_args
+  local -a tags
+
+  _arguments \
+    '(-f --force)'{-f,--force}"[Don't report error if the tag already exists]" \
+    '(-s --strict)'{-s,--strict}'[Treat file info mismatch as an error instead of warning]' \
+    '(-h --help)'{-h,--help}'[Show help message]' \
+    "1:file:_files" \
+    "*:tag:->tags"
+
+  case $state in
+    tags)
+      _ftag_tags
+tags=("${reply[@]}")
+      _describe 'tags' tags
+      ;;
+  esac
+}
+
+_ftag_rm() {
+  local context state state_descr line
+  local -A opt_args
+  local -a tags
+  local -a files
+
+  _arguments \
+    '(-a, --all)'{-a,--all}'[Remove all tags from the file]' \
+    '(-f, --force)'{-f,--force}"[Don't report error if the tag doesn't exist]" \
+    '(-s --strict)'{-s,--strict}'[Treat file info mismatch as an error instead of warning]' \
+    '(-h --help)'{-h,--help}'[Show help message]' \
+    "1:file:->files" \
+    "*:tag:->tags"
+
+  case $state in
+    tags)
+      _ftag_tags
+      tags=("${reply[@]}")
+      _describe 'tags' tags
+      ;;
+    files)
+      _ftag_files
+      files=("${reply[@]}")
+      _describe 'files' files
+      ;;
+  esac
+}
+
+_ftag_copy() {
+  local context state state_descr line
+  local -A opt_args
+  local -a files
+
+  _arguments \
+    '(-s --strict)'{-s,--strict}'[Treat file info mismatch as an error instead of warning]' \
+    '(-h --help)'{-h,--help}'[Show help message]' \
+    "1:source:->files" \
+    "2:destination:_files"
+
+  case $state in
+    files)
+      _ftag_files
+      files=("${reply[@]}")
+      _describe 'files' files
+      ;;
+  esac
+}
+
+_ftag_rename() {
+  local context state state_descr line
+  local -A opt_args
+  local -a tags
+
+  _arguments \
+    '(-f --force)'{-f,--force}'[Force rename even if the new tag already exists]' \
+    '(-h --help)'{-h,--help}'[Show help message]' \
+    "1:old_name:->tags" \
+    "2:new_name:_message 'enter new tag name'"
+
+  case $state in
+    tags)
+      _ftag_tags
+      tags=("${reply[@]}")
+      _describe 'tags' tags
+      ;;
+  esac
+}
+
+_ftag_query() {
+  local context state state_descr line
+  local -A opt_args
+
+  _arguments -C \
+    '(-d --dir)'{-d,--dir}'[Only search for files under the specified directory]:directory:_directories' \
+    '(-t --type)'{-t,--type}'[Only search for file or directories]:type:(file dir)' \
+    '(-m --mode)'{-m,--mode}'[Matching mode]:mode:(relevance regex)' \
+    '(-h --help)'{-h,--help}'[Show help message]' \
+    '*: :->query_args'
+
+  case $state in
+    query_args)
+      # Check if -m or --mode was set to 'regex'
+      if [[ "${opt_args[-m]}" == "regex" || "${opt_args[--mode]}" == "regex" ]]; then
+        _message "regex pattern"
+      else
+        # Default relevance mode: provide tag completion
+        local -a tags
+        _ftag_tags
+        tags=("${reply[@]}")
+        _describe 'tags' tags
+      fi
+      ;;
+  esac
+}
+
+_ftag_show() {
+  local context state state_descr line
+  local -A opt_args
+  local -a files
+
+  _arguments \
+    '(-s --strict)'{-s,--strict}'[Treat file info mismatch as an error instead of warning]' \
+    '(-h --help)'{-h,--help}'[Show help message]' \
+    '1:file:->files'
+
+  case $state in
+    files)
+      _ftag_files
+      files=("${reply[@]}")
+      _describe 'files' files
+      ;;
+  esac
+}
+
+_ftag_list() {
+  local context state state_descr line
+  local -A opt_args
+
+  _arguments \
+    '(-h --help)'{-h,--help}'[Show help message]' \
+    '1:type:(files tags)'
+}
+
+_ftag_stat() {
+  local context state state_descr line
+  local -A opt_args
+
+  _arguments \
+    '--top-tags-limit[Show top N tags (default: 5)]:limit:_message "number of tags"' \
+    '(-h --help)'{-h,--help}'[Show help message]' \
+    '*: : '
+}
+
+_ftag_sync() {
+  local context state state_descr line
+  local -A opt_args
+
+  _arguments \
+    "--dry-run[Don't actually update the database, just show what would be done]" \
+    '--deep[Force full hash verification]' \
+    '(-y --yes)'{-y,--yes}'[Automatically confirm all prompts]' \
+    '(-h --help)'{-h,--help}'[Show help message]' \
+    '*: : '
+}
+
+_ftag_cleanup() {
+  local context state state_descr line
+  local -A opt_args
+
+  _arguments \
+    '(-h --help)'{-h,--help}'[Show help message]' \
+    '*: : '
+}
