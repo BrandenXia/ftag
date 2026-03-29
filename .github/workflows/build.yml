@@ -20,8 +20,8 @@ jobs:
 
           - os: linux
             arch: arm64
-            runner: ubuntu-latest
-            cc: aarch64-linux-gnu-gcc
+            runner: ubuntu-22.04-arm
+            cc: gcc
 
           - os: macos
             arch: amd64
