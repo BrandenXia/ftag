@@ -35,7 +35,7 @@ SRCS := $(wildcard src/*.c) $(wildcard src/**/*.c)
 OBJS := $(patsubst src/%.c, $(BUILD_DIR)/%.o, $(SRCS))
 DEPS := $(patsubst src/%.c, $(BUILD_DIR)/%.d, $(SRCS))
 
-.PHONY: all install uninstall clean-build clean-exe clean-compile-commands clean
+.PHONY: all install uninstall clean-build clean-exe clean-compile-commands clean FORCE
 .PRECIOUS: $(BUILD_DIR) $(BUILD_DIR)/%
 
 all: $(TARGET)
@@ -50,18 +50,18 @@ $(foreach dir,$(sort $(dir $(OBJS))),$(eval $(call define_mkdir_target,$(dir))))
 
 -include $(DEPS)
 
-external/BLAKE3/c/build/libblake3.a:
+external/BLAKE3/c/build/libblake3.a: FORCE
 	cmake -S external/BLAKE3/c -B external/BLAKE3/c/build
-	cmake --build external/BLAKE3/c/build
+	cmake --build external/BLAKE3/c/build --parallel
 
-external/pcre2/build/libpcre2-8.a:
+external/pcre2/build/libpcre2-8.a: FORCE
 	cmake -S external/pcre2 -B external/pcre2/build -DPCRE2_SUPPORT_JIT=ON
-	cmake --build external/pcre2/build
+	cmake --build external/pcre2/build --parallel
 
-build/stb_ds.o: $(DIRS)
+build/stb_ds.o: | $(DIRS)
 	$(CC) -O3 -c external/stb/impl/stb_ds.c -Iexternal/stb/include -o $@
 
-$(BUILD_DIR)/%.o: src/%.c Makefile | $(DIRS)
+$(BUILD_DIR)/%.o: src/%.c Makefile | $(DIRS) $(LIBS_FILES)
 	$(CC) $(CFLAGS) -MMD -MP $(INCLUDE_FLAGS) -c $< -o $@
 
 $(TARGET): $(OBJS) $(LIBS_FILES)
@@ -80,6 +80,8 @@ uninstall:
 
 clean-build:
 	rm -rf $(BUILD_DIR)
+	rm -rf external/BLAKE3/c/build
+	rm -rf external/pcre2/build
 
 clean-exe: 
 	rm -f $(TARGET)
