@@ -252,3 +252,5 @@ _ftag_cleanup() {
     '(-h --help)'{-h,--help}'[Show help message]' \
     '*: : '
 }
+
+_ftag "$@"
