@@ -263,7 +263,7 @@ void parse_stat_opts(stat_opts_t *opts, int argc, char **argv) {
   int opt;
   opts->top_tags_limit = 5;
 
-  while ((opt = getopt_long(argc, argv, "th", stat_long_opts, NULL)) != -1)
+  while ((opt = getopt_long(argc, argv, "t:h", stat_long_opts, NULL)) != -1)
     switch (opt) {
     case 't': {
       char *endptr;
