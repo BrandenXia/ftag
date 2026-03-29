@@ -13,6 +13,10 @@ CFLAGS := -Wall -Wextra -Wpedantic -Werror -Wshadow -Wconversion -Wsign-conversi
 CFLAGS_DEBUG := -g -O0
 CFLAGS_RELEASE := -O3
 
+ifdef VERSION
+	CFLAGS += -DFTAG_VERSION=\"$(VERSION)\"
+endif
+
 ifeq ($(MODE), DEBUG)
 	CFLAGS += $(CFLAGS_DEBUG)
 else ifeq ($(MODE), RELEASE)

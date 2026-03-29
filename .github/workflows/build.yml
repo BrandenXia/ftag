@@ -57,7 +57,7 @@ jobs:
       - name: Build
         run: |
           make clean || true
-          make MODE=RELEASE CC=${{ matrix.cc }}
+          make MODE=RELEASE CC=${{ matrix.cc }} VERSION=v${{ steps.version.outputs.VERSION }}
 
       - name: Package binary
         run: |

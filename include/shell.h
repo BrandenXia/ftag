@@ -11,6 +11,7 @@ static const char *USAGE_STR_GLOBAL =
     "Options:\n"
     "   -v, --verbose   Enable verbose output (for debugging)\n"
     "   -h, --help      Show this help message and exit\n"
+    "   --version       Show version information and exit\n"
     "\n"
     "Commands:\n"
     "   init      Initalize a new tag database under the current directory\n"

@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "utils.h"
+#include "version.h"
 
 #define UNKOWN_OPT_MSG "Error processing arguments: Unknown option '-%c'\n"
 
@@ -13,14 +14,16 @@
 static struct option global_long_opts[] = {
   {"verbose", no_argument, NULL, 'v'},
   {"help", no_argument, NULL, 'h'},
+  {"version", no_argument, NULL, 'V'},
   {NULL, 0, NULL, 0},
 };
 void parse_global_opts(global_opts_t *opts, int argc, char **argv) {
   int opt;
-  while ((opt = getopt_long(argc, argv, "+vh", global_long_opts, NULL)) != -1)
+  while ((opt = getopt_long(argc, argv, "+vhV", global_long_opts, NULL)) != -1)
     switch (opt) {
     case 'v': opts->verbose = true; break;
     case 'h': fputs(USAGE_STR_GLOBAL, stdout); exit(EXIT_SUCCESS);
+    case 'V': printf("ftag %s\n", FTAG_VERSION); exit(EXIT_SUCCESS);
     case '?': ERROR_USAGE_EXIT(USAGE_STR_GLOBAL, UNKOWN_OPT_MSG, optopt);
     }
 }
