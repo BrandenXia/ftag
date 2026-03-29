@@ -9,7 +9,7 @@ INSTALL = install
 INSTALL_PROGRAM = $(INSTALL)
 INSTALL_DATA = $(INSTALL) -m644
 
-CFLAGS := -Wall -Wextra -Wpedantic -Werror -Wshadow -Wconversion -Wsign-conversion -Wimplicit-fallthrough -std=c23
+CFLAGS := -Wall -Wextra -Wpedantic -Werror -Wshadow -Wconversion -Wsign-conversion -Wimplicit-fallthrough -std=c2x
 CFLAGS_DEBUG := -g -O0
 CFLAGS_RELEASE := -O3
 
