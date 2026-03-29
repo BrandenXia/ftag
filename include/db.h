@@ -33,6 +33,8 @@ void delete_file(sqlite3 *db, long long file_id);
 
 void query_file_by_path(sqlite3 *db, const char *path, db_query_ctx_t ctx);
 
+void query_all_files(sqlite3 *db, db_query_ctx_t ctx);
+
 long long add_or_get_tag_id(sqlite3 *db, const char *name);
 
 // Returns false on conflict
@@ -46,6 +48,8 @@ void add_file_tag(sqlite3 *db, long long file_id, long long tag_id);
 void remove_file_tag(sqlite3 *db, long long file_id, long long tag_id);
 
 void remove_all_tags(sqlite3 *db, long long file_id);
+
+void query_all_tags_name(sqlite3 *db, db_query_ctx_t ctx);
 
 void copy_file_tags(sqlite3 *db, long long src_file_id, long long dst_file_id);
 

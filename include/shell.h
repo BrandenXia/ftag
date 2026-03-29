@@ -21,6 +21,7 @@ static const char *USAGE_STR_GLOBAL =
     "   query     Query files by tags\n"
     "   find      Alias for 'query --dir .'\n"
     "   show      Show all tags of a file\n"
+    "   list      List files or tags in the database\n"
     "   stat      Show statistics about the tag database\n"
     "   sync      Sync the tag database with the filesystem\n"
     "   cleanup   Cleanup orphaned tags and files from the database\n"
@@ -93,6 +94,15 @@ static const char *USAGE_STR_SHOW =
     "   -s, --strict    Treat file info mismatch as an error instead of "
     "warning\n"
     "   -h, --help      Show this help message and exit\n";
+
+static const char *USAGE_STR_LIST =
+    "Usage: ftag list [options] [type]\n"
+    "\n"
+    "Options:\n"
+    "   -h, --help      Show this help message and exit\n"
+    "\n"
+    "Arguments:\n"
+    "   type            What to list (files|tags), default: files\n";
 
 static const char *USAGE_STR_STAT =
     "Usage: ftag stat [options]\n"
@@ -177,6 +187,10 @@ typedef struct {
 } show_opts_t;
 
 typedef struct {
+  enum list_opts_type { LIST_TYPE_FILES, LIST_TYPE_TAGS } type;
+} list_opts_t;
+
+typedef struct {
   size_t top_tags_limit;
 } stat_opts_t;
 
@@ -199,6 +213,7 @@ void parse_copy_opts    (copy_opts_t    *, int, char *[]);
 void parse_rename_opts  (rename_opts_t  *, int, char *[]);
 void parse_query_opts   (query_opts_t   *, int, char *[]);
 void parse_show_opts    (show_opts_t    *, int, char *[]);
+void parse_list_opts    (list_opts_t    *, int, char *[]);
 void parse_stat_opts    (stat_opts_t    *, int, char *[]);
 void parse_sync_opts    (sync_opts_t    *, int, char *[]);
 void parse_cleanup_opts (cleanup_opts_t *, int, char *[]);

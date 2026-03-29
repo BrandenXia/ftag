@@ -212,6 +212,18 @@ void query_file_by_path(sqlite3 *db, const char *path, db_query_ctx_t ctx) {
   SQL_FINALIZE(stmt);
 }
 
+#define SQL_QUERY_ALL_FILES "SELECT id, path, is_dir FROM files;"
+
+void query_all_files(sqlite3 *db, db_query_ctx_t ctx) {
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, SQL_QUERY_ALL_FILES);
+
+  while (sqlite3_step(stmt) == SQLITE_ROW)
+    ctx.callback(stmt, ctx.user_data);
+
+  SQL_FINALIZE(stmt);
+}
+
 #define SQL_INSERT_FILE_TAG                                                    \
   "INSERT OR IGNORE INTO file_tags (file_id, tag_id) VALUES (?, ?);"
 
@@ -243,6 +255,18 @@ void remove_all_tags(sqlite3 *db, long long file_id) {
   SQL_PREPARE(stmt, SQL_DELETE_ALL_FILE_TAGS);
   SQL_BIND_NUM(int64, stmt, 1, file_id, "file_id");
   SQL_STEP(stmt);
+  SQL_FINALIZE(stmt);
+}
+
+#define SQL_QUERY_ALL_TAGS_NAME "SELECT name FROM tags;"
+
+void query_all_tags_name(sqlite3 *db, db_query_ctx_t ctx) {
+  sqlite3_stmt *stmt;
+  SQL_PREPARE(stmt, SQL_QUERY_ALL_TAGS_NAME);
+
+  while (sqlite3_step(stmt) == SQLITE_ROW)
+    ctx.callback(stmt, ctx.user_data);
+
   SQL_FINALIZE(stmt);
 }
 

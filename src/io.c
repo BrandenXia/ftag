@@ -289,6 +289,20 @@ void show_tags(sqlite3 *db, long long file_id) {
   if (found_count == 0) printf("No tags found for the specified file.\n");
 }
 
+void list_files(sqlite3 *db, const char *relative_to, const char *dir) {
+  struct print_file_ctx ctx = {
+    .relative_to = relative_to,
+    .dir = dir,
+    .type = QUERY_TYPE_BOTH,
+    .verbose = false,
+  };
+  query_all_files(db, (db_query_ctx_t){print_file_path, &ctx});
+}
+
+void list_tags(sqlite3 *db) {
+  query_all_tags_name(db, (db_query_ctx_t){print_tag, NULL});
+}
+
 struct show_stats_top_tag_ctx {
   int *index;
   int total_tagged_files;

@@ -253,6 +253,37 @@ void parse_show_opts(show_opts_t *opts, int argc, char **argv) {
   opts->file = argv[optind];
 }
 
+// --------------------------LIST --------------------------
+static struct option list_long_opts[] = {
+  {"help", no_argument, NULL, 'h'},
+  {NULL, 0, NULL, 0},
+};
+void parse_list_opts(list_opts_t *opts, int argc, char **argv) {
+  int opt;
+  opts->type = LIST_TYPE_FILES;
+
+  while ((opt = getopt_long(argc, argv, "h", list_long_opts, NULL)) != -1)
+    switch (opt) {
+    case 'h': fputs(USAGE_STR_LIST, stdout); exit(EXIT_SUCCESS);
+    case '?': ERROR_USAGE_EXIT(USAGE_STR_LIST, UNKOWN_OPT_MSG, optopt);
+    }
+
+  if (argc > optind + 1)
+    ERROR_USAGE_EXIT(USAGE_STR_LIST,
+                     "Error processing args: Expect at most a type\n");
+
+  if (argc == optind) return; // No type specified, use default
+
+  const char *type = argv[optind];
+  if (strcmp(type, "files") == 0)
+    opts->type = LIST_TYPE_FILES;
+  else if (strcmp(type, "tags") == 0)
+    opts->type = LIST_TYPE_TAGS;
+  else
+    ERROR_USAGE_EXIT(USAGE_STR_LIST,
+                     "Error processing args: Invalid type '%s'\n", type);
+}
+
 // --------------------------STAT --------------------------
 static struct option stat_long_opts[] = {
   {"top-tags-limit", required_argument, NULL, 't'},

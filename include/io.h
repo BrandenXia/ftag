@@ -46,6 +46,10 @@ void query_files(sqlite3 *db, enum tag_match_mode match_mode,
 
 void show_tags(sqlite3 *db, long long file_id);
 
+void list_files(sqlite3 *db, const char *relative_to, const char *dir);
+
+void list_tags(sqlite3 *db);
+
 void show_stats(sqlite3 *db, size_t top_tags_limit);
 
 void sync_tags(sqlite3 *db, const char *data_root, bool dry_run, bool deep,
