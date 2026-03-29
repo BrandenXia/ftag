@@ -1,0 +1,68 @@
+name: Build
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  build:
+    name: ${{ matrix.os }}-${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+
+    strategy:
+      matrix:
+        include:
+          # Linux x86_64
+          - os: linux
+            arch: amd64
+            runner: ubuntu-latest
+            cc: gcc
+
+          # Linux ARM64 (cross-compile)
+          - os: linux
+            arch: arm64
+            runner: ubuntu-latest
+            cc: aarch64-linux-gnu-gcc
+
+          # macOS Intel
+          - os: macos
+            arch: amd64
+            runner: macos-13
+            cc: clang
+
+          # macOS ARM (Apple Silicon)
+          - os: macos
+            arch: arm64
+            runner: macos-latest
+            cc: clang
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential gcc-aarch64-linux-gnu
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install make || true
+
+      - name: Build
+        run: |
+          make clean || true
+          make MODE=RELEASE CC=${{ matrix.cc }}
+
+      - name: Rename binary
+        run: |
+          mv build/ftag ftag-${{ matrix.os }}-${{ matrix.arch }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ftag-${{ matrix.os }}-${{ matrix.arch }}
+          path: ftag-${{ matrix.os }}-${{ matrix.arch }}
