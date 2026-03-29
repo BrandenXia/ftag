@@ -1,6 +1,14 @@
 MODE ?= DEBUG
 CC ?= clang
 
+PREFIX ?= /usr/local
+BIN_DIR ?= $(PREFIX)/bin
+ZSH_COMPLETIONS_DIR ?= $(PREFIX)/share/zsh/site-functions
+
+INSTALL = install
+INSTALL_PROGRAM = $(INSTALL)
+INSSTALL_DATA = $(INSTALL) -m644
+
 CFLAGS := -Wall -Wextra -Wpedantic -Werror -Wshadow -Wconversion -Wsign-conversion -Wimplicit-fallthrough -std=c23
 CFLAGS_DEBUG := -g -O0
 CFLAGS_RELEASE := -O3
@@ -23,7 +31,7 @@ SRCS := $(wildcard src/*.c) $(wildcard src/**/*.c)
 OBJS := $(patsubst src/%.c, $(BUILD_DIR)/%.o, $(SRCS))
 DEPS := $(patsubst src/%.c, $(BUILD_DIR)/%.d, $(SRCS))
 
-.PHONY: all clean-build clean-exe clean-compile-commands clean
+.PHONY: all install uninstall clean-build clean-exe clean-compile-commands clean
 .PRECIOUS: $(BUILD_DIR) $(BUILD_DIR)/%
 
 all: $(TARGET)
@@ -57,6 +65,14 @@ $(TARGET): $(OBJS) $(LIBS_FILES)
 
 compile_commands.json: clean
 	bear -- make
+
+install: $(TARGET)
+	$(INSTALL) -d $(DESTDIR)$(BIN_DIR) $(DESTDIR)$(ZSH_COMPLETIONS_DIR)
+	$(INSTALL_PROGRAM) $(TARGET) $(DESTDIR)$(BIN_DIR)/ftag
+	$(INSSTALL_DATA) completions/_ftag $(DESTDIR)$(ZSH_COMPLETIONS_DIR)/_ftag
+
+uninstall:
+	rm -f $(DESTDIR)$(BIN_DIR)/ftag $(DESTDIR)$(ZSH_COMPLETIONS_DIR)/_ftag
 
 clean-build:
 	rm -rf $(BUILD_DIR)
