@@ -25,7 +25,7 @@ jobs:
 
           - os: macos
             arch: amd64
-            runner: macos-13
+            runner: macos-15-intel
             cc: clang
 
           - os: macos
