@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 
 #include "db.h"
+#include "str_utils.h"
 #include "utils.h"
 
 bool check_data_dir(const char *path) {
@@ -45,8 +46,7 @@ void find_data_dir(const char *path, char *data_root, char *data_dir) {
     size_t buf_len = strlcpy(path_buf2, path_buf, sizeof(path_buf2));
     strlcat(path_buf2, "/" DATA_DIRNAME, sizeof(path_buf2));
     if (check_data_dir(path_buf2)) {
-      if (data_root != NULL)
-        strlcpy(data_root, path_buf, path_len + 1);
+      if (data_root != NULL) strlcpy(data_root, path_buf, path_len + 1);
       if (data_dir != NULL)
         strlcpy(data_dir, path_buf2, path_len + sizeof(DATA_DIRNAME) + 1);
       return; // found the data dir
@@ -83,13 +83,11 @@ char *get_data_path(const char *data_root) {
 }
 
 char *get_db_path(const char *data_path) {
-  if (!data_path)
-    ERROR_EXIT("Data path is NULL");
+  if (!data_path) ERROR_EXIT("Data path is NULL");
 
   size_t len = strlen(data_path) + sizeof(DB_FILENAME) + 1;
   char *db_path = malloc(len);
-  if (!db_path)
-    PERROR_EXIT("Memory allocation failed for db_path");
+  if (!db_path) PERROR_EXIT("Memory allocation failed for db_path");
 
   snprintf(db_path, len, "%s/" DB_FILENAME, data_path);
 
