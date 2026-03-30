@@ -64,7 +64,8 @@
 #define _SQL_STEP_DEFAULT(stmt) _SQL_STEP(stmt, err != SQLITE_DONE)
 
 #define NTH_ARG(_1, _2, COND, ...) COND
-#define CHOOSE_SQL_STEP(...) NTH_ARG(__VA_ARGS__, _SQL_STEP, _SQL_STEP_DEFAULT)
+#define CHOOSE_SQL_STEP(...)                                                   \
+  NTH_ARG(__VA_ARGS__, _SQL_STEP, _SQL_STEP_DEFAULT, NOTHING)
 #define SQL_STEP(...) CHOOSE_SQL_STEP(__VA_ARGS__)(__VA_ARGS__)
 
 #define SQL_FINALIZE(stmt)                                                     \
