@@ -270,7 +270,7 @@ void query_files(sqlite3 *db, enum tag_match_mode match_mode,
   };
   db_query_ctx_t query_ctx = {.callback = print_file_path, .user_data = &ctx};
 
-  int found_count;
+  int found_count = 0;
   switch (match_mode) {
   case TAG_MATCH_RELEVANCE:
     found_count = query_file_tags_relevance(db, u.relevance.tags,

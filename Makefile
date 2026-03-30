@@ -14,7 +14,7 @@ CFLAGS_DEBUG := -g -O0
 CFLAGS_RELEASE := -O3
 
 ifeq ($(CC), gcc)
-	CFLAGS += -Wno-unused-variable
+	CFLAGS += -Wno-unused-variable -Wno-unused-result
 endif
 
 ifdef VERSION
