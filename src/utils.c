@@ -1,3 +1,8 @@
+#if defined(__linux__)
+#define _XOPEN_SOURCE 500
+#endif
+#include <ftw.h>
+
 #include "utils.h"
 
 #include <stddef.h>
@@ -5,11 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#if defined(__linux__)
-#define _XOPEN_SOURCE 500
-#endif
-#include <ftw.h>
 
 // from https://stackoverflow.com/a/5467788
 // TODO: replace with fts api as suggested by the Man Page of nftw
