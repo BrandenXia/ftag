@@ -11,6 +11,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#if defined(__linux__) && !defined(PATH_MAX)
+#include <linux/limits.h>
+#endif
+
 #include "stb/stb_ds.h"
 
 #include "db.h"
@@ -667,11 +671,11 @@ void sync_tags(sqlite3 *db, const char *data_root, bool dry_run, bool deep,
         printf("Choose a candidate to resolve the missing file\n");
         puts("Index of candidate to choose, or 0 to skip:");
         int choice;
-        scanf("%d", &choice);
+        (void)scanf("%d", &choice);
         while (choice < 0 || choice >= idx) {
           printf("Invalid choice, please enter a number between 0 and %d: ",
                  idx - 1);
-          scanf("%d", &choice);
+          (void)scanf("%d", &choice);
         }
 
         if (choice != 0) {
@@ -723,7 +727,7 @@ void sync_tags(sqlite3 *db, const char *data_root, bool dry_run, bool deep,
       puts("Note: the path should be relative to the data root directory");
       printf("New path: ");
       char tmp_buf[PATH_MAX];
-      scanf("%s", tmp_buf);
+      (void)scanf("%s", tmp_buf);
       concat_paths(data_root, tmp_buf, path_buf, PATH_MAX);
       resolved_path = path_buf;
       relative_path = get_relative_path(data_root, resolved_path);
