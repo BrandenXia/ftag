@@ -1,10 +1,7 @@
-#if defined(__linux__)
-#define _XOPEN_SOURCE 500
-#endif
-#include <ftw.h>
 
 #include "utils.h"
 
+#include <ftw.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>

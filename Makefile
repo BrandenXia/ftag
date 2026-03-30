@@ -13,8 +13,14 @@ CFLAGS := -Wall -Wextra -Wpedantic -Werror -Wshadow -Wconversion -Wsign-conversi
 CFLAGS_DEBUG := -g -O0
 CFLAGS_RELEASE := -O3
 
+OS := $(shell uname -s)
+
 ifeq ($(CC), gcc)
 	CFLAGS += -Wno-unused-variable -Wno-unused-result
+endif
+
+ifeq ($(OS), Darwin)
+	CFLAGS += -D_XOPEN_SOURCE=500
 endif
 
 ifdef VERSION
