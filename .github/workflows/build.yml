@@ -18,11 +18,6 @@ jobs:
             runner: ubuntu-latest
             cc: gcc
 
-          - os: linux
-            arch: arm64
-            runner: ubuntu-22.04-arm
-            cc: gcc
-
           - os: macos
             arch: amd64
             runner: macos-15-intel
