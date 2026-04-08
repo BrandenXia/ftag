@@ -19,7 +19,7 @@ ifeq ($(CC), gcc)
 	CFLAGS += -Wno-unused-variable -Wno-unused-result
 endif
 
-ifeq ($(OS), Darwin)
+ifeq ($(OS), Linux)
 	CFLAGS += -D_XOPEN_SOURCE=500
 endif
 
